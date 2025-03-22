@@ -1,0 +1,70 @@
+name: Build and test api
+on:
+  workflow_dispatch:
+  
+jobs:
+
+  build:
+    runs-on: ubuntu-latest   
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup .NET Core
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '8.0.x'
+
+    - name: Restore dependencies
+      working-directory: code/dotnet/Api
+      run: dotnet restore
+
+    - name: Build
+      working-directory: code/dotnet/Api
+      run: dotnet build --configuration Release --no-restore Api.csproj
+
+    - name: Publish
+      working-directory: code/dotnet/Api
+      run: dotnet publish -c Release -o ./publish
+
+    - name: Upload artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: api
+        path: code/dotnet/Api/publish
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment: Production # case is significant
+
+    env:
+      APP_NAME: app-dev-financial-model
+ 
+    permissions:
+      id-token: write #This is required for requesting the JWT
+      contents: read #This is required for actions/checkout
+
+    steps:
+      - name: Download artifact from build job
+        uses: actions/download-artifact@v4
+        with:
+          name: api
+          path: ./publish
+      
+      - name: Login to Azure
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_5F0AD3C910A24838BAAA8289FE74FF08 }}
+          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_43A05CF9667A454F8732DB9A8B6ACC6E }}
+          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_64CFA409969D4B178E9BCF5B8A87020D }}
+
+      - name: Deploy to Azure Web App
+        id: deploy-to-webapp
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: ${{ env.APP_NAME }}
+          slot-name: 'Production'
+          package: ./publish
+
