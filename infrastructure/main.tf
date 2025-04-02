@@ -68,19 +68,12 @@ resource "azurerm_federated_identity_credential" "github_federated_identity" {
 }
 
 
-// create a cosmosdb instance
-resource "azurerm_cosmosdb_account" "cosmosdb" {
-  name                = "cosmosdb-${var.environment}-${var.service_name}"
-  resource_group_name = azurerm_resource_group.group.name
-  location            = azurerm_resource_group.group.location
-  offer_type          = "Standard"
-  kind                = "GlobalDocumentDB"
-  free_tier_enabled   = true
-  consistency_policy {
-    consistency_level = "Session"
-  }
-  geo_location {
-    location          = azurerm_resource_group.group.location
-    failover_priority = 0
-  }
+resource "azurerm_storage_account" "storage" {
+  name                     = replace("st${var.environment}${var.service_name}", "-", "")
+  resource_group_name      = azurerm_resource_group.group.name
+  location                 = azurerm_resource_group.group.location
+  account_tier             = "Standard"
+  account_replication_type = "LRS"  
+  
+  min_tls_version         = "TLS1_2"
 }
