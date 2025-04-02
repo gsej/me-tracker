@@ -1,0 +1,10 @@
+nohup.out
+.idea
+**/bin/
+**/obj/
+**/*.xlsx*
+**/*.ods*
+**/*lock*ods*
+*DotSettings.user
+*.csv
+*.csv#
