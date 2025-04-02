@@ -1,4 +1,3 @@
-using System.Reflection;
 using Api.Controllers;
 
 namespace Api;
@@ -26,6 +25,7 @@ public static class Program
                 });
         });
        
+        builder.Services.AddControllers();
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen(s =>
         {
