@@ -1,0 +1,22 @@
+### Get backup data
+GET http://localhost:5200/api/backup
+Content-Type: application/json
+X-Api-Key: apikey
+
+### Restore data
+POST http://localhost:5200/api/backup/restore
+Content-Type: application/json
+X-Api-Key: apikey
+
+{
+    "weightRecords": [
+        {
+            "date": "2024-04-11T00:00:00Z",
+            "weight": 80.5
+        },
+        {
+            "date": "2024-04-12T00:00:00Z",
+            "weight": 80.2
+        }
+    ]
+}
