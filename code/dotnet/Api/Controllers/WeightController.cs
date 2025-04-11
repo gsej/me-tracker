@@ -4,11 +4,13 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.OpenApi.Any;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.SwaggerGen;
+using Api.Filters;
 
 namespace Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
+[ServiceFilter(typeof(ApiKeyAuthFilter))]
 public class WeightController : ControllerBase
 {
     private readonly TableServiceClient _tableServiceClient;
@@ -17,6 +19,7 @@ public class WeightController : ControllerBase
     {
         _tableServiceClient = tableServiceClient;
     }
+
     [HttpPost]
     public async Task<IActionResult> PostWeightEntry([FromBody] WeightRecord entry)
     {
@@ -36,8 +39,7 @@ public class WeightController : ControllerBase
         };
 
         // Add the record to the table
-        await tableClient.AddEntityAsync(entity);
-        
+        await tableClient.AddEntityAsync(entity);        
         
         return Accepted();
     }

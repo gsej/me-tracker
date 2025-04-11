@@ -1,5 +1,7 @@
 using Api.Controllers;
+using Api.Filters;
 using Azure.Data.Tables;
+using Microsoft.OpenApi.Models;
 
 namespace Api;
 
@@ -28,11 +30,35 @@ public static class Program
         
        
         builder.Services.AddControllers();
+        builder.Services.AddScoped<ApiKeyAuthFilter>();
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen(s =>
         {
             s.SchemaFilter<WeightController.WeightRecordExample>();
             s.CustomSchemaIds(x => x.FullName);
+            
+            s.AddSecurityDefinition("ApiKey", new OpenApiSecurityScheme
+            {
+                Type = SecuritySchemeType.ApiKey,
+                In = ParameterLocation.Header,
+                Name = "X-API-Key",
+                Description = "API Key Authentication"
+            });
+
+            s.AddSecurityRequirement(new OpenApiSecurityRequirement
+            {
+                {
+                    new OpenApiSecurityScheme
+                    {
+                        Reference = new OpenApiReference
+                        {
+                            Type = ReferenceType.SecurityScheme,
+                            Id = "ApiKey"
+                        }
+                    },
+                    Array.Empty<string>()
+                }
+            });
         });
         
         builder.Services.AddSingleton(sp =>
