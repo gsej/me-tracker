@@ -1,4 +1,5 @@
 using Api.Controllers;
+using Azure.Data.Tables;
 
 namespace Api;
 
@@ -12,8 +13,6 @@ public static class Program
             .AddJsonFile("appsettings.json", optional: true, reloadOnChange: false)
             .AddEnvironmentVariables();
 
-        //builder.Services.AddMemoryCache();
-
         builder.Services.AddCors(options =>
         {
             options.AddPolicy("AllowAllOrigins",
@@ -24,6 +23,9 @@ public static class Program
                     policy.AllowAnyHeader();
                 });
         });
+        
+        
+        
        
         builder.Services.AddControllers();
         builder.Services.AddEndpointsApiExplorer();
@@ -32,6 +34,14 @@ public static class Program
             s.SchemaFilter<WeightController.WeightRecordExample>();
             s.CustomSchemaIds(x => x.FullName);
         });
+        
+        builder.Services.AddSingleton(sp =>
+        {
+            var configuration = sp.GetRequiredService<IConfiguration>();
+            var connectionString = configuration["Azure:TableStorage:ConnectionString"];
+            return new TableServiceClient(connectionString);
+        });
+        
         var app = builder.Build();
 
         app.UseSwagger();
