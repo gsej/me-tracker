@@ -40,6 +40,7 @@ resource "azurerm_linux_web_app" "linuxapp" {
 
   app_settings = {
       APPINSIGHTS_INSTRUMENTATIONKEY = azurerm_application_insights.appinsights.instrumentation_key
+      ApiKey                        = var.api_key
   }
 }
 
@@ -50,8 +51,8 @@ resource "azurerm_user_assigned_identity" "github_identity" {
   
 }
 
-# // add a role assignment to the managed identity, with the role website contributor and the resource
-# // being the app service previously created 
+# add a role assignment to the managed identity, with the role website contributor and the resource
+# being the app service previously created 
 resource "azurerm_role_assignment" "role_assignment" {
   scope                = azurerm_linux_web_app.linuxapp.id
   role_definition_name = "Contributor"

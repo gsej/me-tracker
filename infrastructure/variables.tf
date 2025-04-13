@@ -9,3 +9,8 @@ variable service_name {
 variable environment {
     default = "dev"
 }
+
+variable "api_key" {
+    description = "API key for the web application"
+    sensitive   = true
+}
