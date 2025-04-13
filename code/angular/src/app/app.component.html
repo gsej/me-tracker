@@ -14,9 +14,12 @@
   </main>
 
   <!-- Footer with app-pi -->
-  <footer class="p-4 w-full flex justify-end">
+  <footer class="p-4 w-full flex justify-between">
+    <app-api-key-input></app-api-key-input>
     <app-pi [text]="gitHash"></app-pi>
   </footer>
+
+  
 </div>
 
 <router-outlet />
