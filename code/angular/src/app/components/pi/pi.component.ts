@@ -6,23 +6,18 @@ import { ChangeDetectionStrategy, Component, Input, OnInit } from '@angular/core
   standalone: true,
   imports: [CommonModule],
   template: `
-    <div class="pi-container text-lg">
-      <span class="pi-symbol">&pi;</span>
-      <span class="hover-text">&nbsp;&nbsp;{{ text }}</span>
+    <div class="flex items-center justify-end h-10 cursor-pointer" (click)="toggleText()">
+      <span class="mr-2" [class.hidden]="!isTextVisible">{{ text }}</span>
+      <span class="text-lg">&pi;</span>
     </div>
   `,
-  styles: [`
-    .hover-text {
-      display: none;
-    }
-    .pi-container:hover .hover-text {
-      display: inline;
-    }
-  `],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class PiComponent {
+  @Input() text = "";
+  isTextVisible = false;
 
-  @Input()
-  text = "";
+  toggleText() {
+    this.isTextVisible = !this.isTextVisible;
+  }
 }
