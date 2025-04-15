@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
@@ -13,6 +13,17 @@ export class ApiKeyInputComponent implements OnInit {
   apiKey: string = '';
   isVisible: boolean = false;
   private readonly STORAGE_KEY = 'api_key';
+
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent) {
+    const target = event.target as HTMLElement;
+    const apiKeyInput = document.querySelector('app-api-key-input');
+    
+    // Only hide if clicking outside the component
+    if (apiKeyInput && !apiKeyInput.contains(target)) {
+      this.isVisible = false;
+    }
+  }
 
   ngOnInit() {
     this.loadApiKey();
