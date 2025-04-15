@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Output, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { SettingsService } from '../../settings/settings.service';
@@ -13,9 +13,7 @@ import { CommonModule } from '@angular/common';
   imports: [CommonModule, ReactiveFormsModule]
 })
 export class WeightInputComponent {
-  weightForm: FormGroup;
-
-  @Output() weightSubmitted = new EventEmitter<number | null>();
+  weightForm: FormGroup;  
 
   apiUrl: string = '';
   status: string | null = null;
@@ -57,8 +55,7 @@ export class WeightInputComponent {
           next: () => {
             this.status = 'Success';
             this.errorStatusCode = null;
-            this.weightForm.reset();
-            this.weightSubmitted.emit(weight);
+            this.weightForm.reset();         
             this.clearStatusAfterDelay();
           },
           error: (error) => {

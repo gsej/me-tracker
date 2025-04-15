@@ -10,7 +10,6 @@ import { WeightInputComponent } from './components/weight-input/weight-input.com
   selector: 'app-root',
   standalone: true,
   imports: [
-    RouterOutlet,
     ReactiveFormsModule,
     WeightInputComponent,
     PiComponent,

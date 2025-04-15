@@ -64,7 +64,7 @@ public static class Program
         builder.Services.AddSingleton(sp =>
         {
             var configuration = sp.GetRequiredService<IConfiguration>();
-            var connectionString = configuration["Azure:TableStorage:ConnectionString"];
+            var connectionString = configuration["StorageAccountConnectionString"];
             return new TableServiceClient(connectionString);
         });
         

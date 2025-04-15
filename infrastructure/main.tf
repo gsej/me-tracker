@@ -40,7 +40,8 @@ resource "azurerm_linux_web_app" "linuxapp" {
 
   app_settings = {
       APPINSIGHTS_INSTRUMENTATIONKEY = azurerm_application_insights.appinsights.instrumentation_key
-      ApiKey                        = var.api_key
+      ApiKey                         = var.api_key,
+     StorageAccountConnectionString  = azurerm_storage_account.storage.primary_connection_string      
   }
 }
 

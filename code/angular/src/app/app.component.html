@@ -1,5 +1,5 @@
 <div class="min-h-screen w-full flex flex-col">
-  <!-- Header with GitHub link -->
+
   <header class="p-4 flex justify-between items-center">
     <app-api-key-input></app-api-key-input>
     <a href="https://github.com/gsej/me-tracker" aria-label="Github" target="_blank" rel="noopener">
@@ -9,17 +9,12 @@
     </a>
   </header>
 
-  <!-- Main content -->
   <main class="flex-grow flex items-center justify-center">
     <app-weight-input></app-weight-input>
   </main>
 
-  <!-- Footer with app-pi -->
   <footer class="p-4 w-full flex justify-end">
     <app-pi [text]="gitHash"></app-pi>
   </footer>
-
   
 </div>
-
-<router-outlet />
