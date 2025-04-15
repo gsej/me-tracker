@@ -6,7 +6,7 @@
         type="number" 
         id="weight" 
         formControlName="weight"
-        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-center"
         step="0.1"
         min="0"
       >
@@ -18,5 +18,13 @@
     >
       Submit Weight
     </button>
+    <div *ngIf="status" class="mt-4">
+      <div class="text-center">
+        <div [ngClass]="{'text-green-500': status === 'Success', 'text-red-500': status === 'Error'}">
+          {{status}}
+          <span *ngIf="errorStatusCode"> ({{errorStatusCode}})</span>
+        </div>
+      </div>
+    </div>
   </form>
 </div>
