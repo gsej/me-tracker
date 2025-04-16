@@ -1,4 +1,4 @@
-<div class="min-h-screen w-full flex flex-col">
+<div class="min-h-screen w-full flex flex-col" (touchstart)="onTouchStart($event)" (touchmove)="onTouchMove($event)">
 
   <header class="p-4 flex justify-between items-center">
     <app-api-key-input></app-api-key-input>
@@ -9,12 +9,28 @@
     </a>
   </header>
 
-  <main class="flex-grow flex items-center justify-center">
-    <app-weight-input></app-weight-input>
+  <main class="flex-grow flex flex-col items-center justify-center">
+    <div class="w-full overflow-hidden relative">
+      <div class="flex w-full transition-transform" #pagesContainer>
+        <div class="min-w-full flex-shrink-0 flex justify-center items-center">
+          <app-page-1></app-page-1>
+        </div>
+        <div class="min-w-full flex-shrink-0 flex justify-center items-center">
+          <app-page-2></app-page-2>
+        </div>
+      </div>
+    </div>
+
+    <div class="flex justify-center mt-4">
+      <ng-container *ngFor="let _ of [].constructor(totalPages); let i = index">
+        <div [class]="currentPage === i ? 'w-2.5 h-2.5 rounded-full bg-blue-500 mx-1 cursor-pointer transition-colors duration-300' : 'w-2.5 h-2.5 rounded-full bg-gray-300 mx-1 cursor-pointer transition-colors duration-300'" (click)="goToPage(i)">
+        </div>
+      </ng-container>
+    </div>
   </main>
 
   <footer class="p-4 w-full flex justify-end">
     <app-pi [text]="gitHash"></app-pi>
   </footer>
-  
+
 </div>
