@@ -24,8 +24,7 @@ public static class Program
                     policy.AllowAnyMethod();
                     policy.AllowAnyHeader();
                 });
-        });
-        
+        });      
         
         
        
