@@ -1,0 +1,47 @@
+{
+  "project": {
+    "name": "me-tracker",
+    "description": "A personal weight tracking application with Angular frontend and .NET backend"
+  },
+  "design_rules": {
+    "general": [
+      "Use Tailwind CSS for styling instead of custom CSS when possible",
+      "Prefer standalone Angular components",
+      "Follow a clean architecture approach in the .NET backend"
+    ],
+    "frontend": {
+      "angular": [
+        "Use Angular's standalone component API",
+        "Implement responsive design for all components",
+        "Use Tailwind utility classes instead of custom CSS",
+        "Keep component logic simple and focused on a single responsibility",
+        "Use reactive forms for all form inputs"
+      ],
+      "styling": [
+        "Use Tailwind utility classes directly in HTML",
+        "Avoid custom CSS unless absolutely necessary",
+        "Use a consistent color scheme based on Tailwind's blue palette",
+        "Ensure all UI elements are accessible"
+      ]
+    },
+    "backend": {
+      "dotnet": [
+        "Use .NET 8+ features where appropriate",
+        "Follow RESTful API design principles",
+        "Implement proper error handling and validation",
+        "Use dependency injection for all services",
+        "Keep controllers thin, with business logic in services"
+      ],
+      "database": [
+        "Use Azure Table Storage for persistence",
+        "Define clear entity models with appropriate partitioning strategy",
+        "Handle database operations asynchronously"
+      ]
+    },
+    "security": [
+      "Use API key authentication for backend requests",
+      "Store sensitive information securely",
+      "Validate all user inputs"
+    ]
+  }
+}
