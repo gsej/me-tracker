@@ -1,6 +1,5 @@
 using Api.Controllers.Models;
 using Api.Filters;
-using Azure;
 using Azure.Data.Tables;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.OpenApi.Any;
@@ -10,7 +9,7 @@ using Swashbuckle.AspNetCore.SwaggerGen;
 namespace Api.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/weight")]
 [ServiceFilter(typeof(ApiKeyAuthFilter))]
 public class WeightController : ControllerBase
 {
@@ -19,6 +18,31 @@ public class WeightController : ControllerBase
     public WeightController(TableServiceClient tableServiceClient)
     {
         _tableServiceClient = tableServiceClient;
+    }
+    
+    [HttpGet("{weightId:guid}")]
+    public async Task<IActionResult> GetWeightRecord(Guid weightId)
+    {
+        var tableName = "Weights";
+        var tableClient = _tableServiceClient.GetTableClient(tableName);
+
+        await tableClient.CreateIfNotExistsAsync();
+        
+        var queryResults = tableClient.QueryAsync<WeightEntity>($"PartitionKey eq 'WeightEntries' and WeightId eq guid'{weightId}'");
+
+        WeightEntity? entity = null;
+        await foreach (var result in queryResults)
+        {
+            entity = result;
+            break; // Stop after finding the first match
+        }
+
+        if (entity == null)
+        {
+            return NotFound($"Weight record with ID {weightId} not found.");
+        }
+
+        return Ok(new WeightRecord(entity.WeightId, entity.Date, entity.Weight));
     }
 
     [HttpPost]
@@ -29,11 +53,39 @@ public class WeightController : ControllerBase
         
         await tableClient.CreateIfNotExistsAsync();
 
-        var entity = new WeightEntity(Guid.NewGuid(), request.Date, request.Weight);
+        var weightId = Guid.NewGuid();
+        var entity = new WeightEntity(weightId, request.Date, request.Weight);
         
         await tableClient.AddEntityAsync(entity);
+            
+        Response.Headers.Append("Location", $"/api/weight/{weightId}");
 
-        return Accepted();
+        return CreatedAtAction(nameof(GetWeightRecord), new { weightId }, null);
+    }
+    
+    [HttpDelete("{weightId:guid}")]
+    public async Task<IActionResult> DeleteWeightRecord(Guid weightId)
+    {
+        var tableName = "Weights";
+        var tableClient = _tableServiceClient.GetTableClient(tableName);
+
+        await tableClient.CreateIfNotExistsAsync();
+
+        var queryResults = tableClient.QueryAsync<WeightEntity>($"PartitionKey eq 'WeightEntries' and WeightId eq guid'{weightId}'");
+
+        WeightEntity? entityToDelete = null;
+        await foreach (var entity in queryResults)
+        {
+            entityToDelete = entity;
+            break; // Stop after finding the first match
+        }
+
+        if (entityToDelete != null)
+        {
+            await tableClient.DeleteEntityAsync(entityToDelete.PartitionKey, entityToDelete.RowKey);
+        }
+
+        return NoContent();
     }
 
     public class WeightRecordExample : ISchemaFilter

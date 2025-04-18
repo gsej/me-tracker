@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace Api.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/backup")]
 [ServiceFilter(typeof(ApiKeyAuthFilter))]
 public class BackupController : ControllerBase
 {

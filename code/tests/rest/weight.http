@@ -1,0 +1,27 @@
+### Get backup data
+GET http://localhost:5200/api/weight/5bf0a60a-58d9-4136-8b4c-85a82e34fb02
+X-Api-Key: apikey
+
+### create entry
+# @name createWeight
+POST http://localhost:5200/api/weight
+Content-Type: application/json
+X-Api-Key: apikey
+
+{           
+    "date": "2025-04-18T07:23:29.049Z",
+    "weight": 12       
+}
+
+
+# @locationHeader = {{createWeight.response.headers.Location}}
+
+# ### Use the captured location
+# GET {{locationHeader}}
+# X-Api-Key: apikey
+
+
+
+# ### delete entry
+# DELETE http://localhost:5200/api/weight/22e3f9df-d0e7-4181-ac40-244d6dc16a71
+# X-Api-Key: apikey
