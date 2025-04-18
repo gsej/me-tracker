@@ -6,8 +6,8 @@ describe('backup', () => {
 
   const sampleData = {
     weightRecords: [
-      { date: "2025-04-10T00:00:00Z", weight: 71.0 },
-      { date: "2025-04-11T00:00:00Z", weight: 70.5 }      
+      { weightId: "955c82e8-124a-427b-9160-358db7e51e41", date: "2025-04-10T00:00:00Z", weight: 71.0 },
+      { weightId: "5bf0a60a-58d9-4136-8b4c-85a82e34fb02", date: "2025-04-11T00:00:00Z", weight: 70.5 }      
     ]
   };
 

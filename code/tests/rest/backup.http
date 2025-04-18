@@ -11,12 +11,14 @@ X-Api-Key: apikey
 {
     "weightRecords": [
         {
-            "date": "2024-04-11T00:00:00Z",
-            "weight": 80.5
+            "weightId": "955c82e8-124a-427b-9160-358db7e51e41",
+            "date": "2025-04-18T07:23:29.049Z",
+            "weight": 12
         },
         {
-            "date": "2024-04-12T00:00:00Z",
-            "weight": 80.2
+            "weightId": "5bf0a60a-58d9-4136-8b4c-85a82e34fb02",
+            "date": "2025-04-18T07:24:00.591Z",
+            "weight": 43
         }
     ]
 }

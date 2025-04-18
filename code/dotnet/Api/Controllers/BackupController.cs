@@ -1,3 +1,4 @@
+using Api.Controllers.Models;
 using Api.Filters;
 using Azure;
 using Azure.Data.Tables;
@@ -31,7 +32,10 @@ public class BackupController : ControllerBase
         var queryResults = tableClient
             .QueryAsync<WeightEntity>($"PartitionKey eq '{PartitionKey}'");
 
-        await foreach (var entity in queryResults) weightRecords.Add(new WeightRecord(entity.Date, entity.Weight));
+        await foreach (var entity in queryResults)
+        {
+            weightRecords.Add(new WeightRecord(entity.WeightId, entity.Date, entity.Weight));
+        }
 
         var orderedWeightRecords = weightRecords.OrderBy(record => record.Date);
 
@@ -39,7 +43,7 @@ public class BackupController : ControllerBase
     }
 
     [HttpPost("restore")]
-    public async Task<IActionResult> RestoreWeightRecords([FromBody] WeightsCollection records)
+    public async Task<IActionResult> RestoreWeightRecords([FromBody] WeightsCollection? records)
     {
         if (records == null || records.WeightRecords == null)
             return BadRequest("No records provided");
@@ -53,15 +57,7 @@ public class BackupController : ControllerBase
 
         foreach (var weightRecord in records.WeightRecords)
         {
-            var entity = new WeightEntity
-            {
-                PartitionKey = PartitionKey,
-                RowKey = Guid.NewGuid().ToString(),
-                Date = weightRecord.Date,
-                Weight = weightRecord.Weight,
-                ETag = ETag.All
-            };
-
+            var entity = new WeightEntity(weightRecord.WeightId, weightRecord.Date, weightRecord.Weight);
             await tableClient.AddEntityAsync(entity);
         }
 

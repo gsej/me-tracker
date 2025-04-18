@@ -3,13 +3,28 @@ using System.Runtime.Serialization;
 using Azure;
 using Azure.Data.Tables;
 
-namespace Api.Controllers;
+namespace Api.Controllers.Models;
 
 public class WeightEntity : ITableEntity
 {
-    public DateTime Date { get; set; }
+    public WeightEntity()
+    {
+    }
+    
+    public WeightEntity(Guid weightId, DateTime date, decimal weight)
+    {
+        WeightId = weightId;
+        Date = date;
+        Weight = weight;
+        RowKey = Guid.NewGuid().ToString();
+    }
+    
+    public Guid WeightId { get; init; }
+    
+    public DateTime Date { get; init; }
 
-    [IgnoreDataMember] public decimal Weight { get; set; }
+    [IgnoreDataMember] 
+    public decimal Weight { get; set; }
 
     [DataMember(Name = "Weight")]
     public string WeightString
@@ -18,9 +33,9 @@ public class WeightEntity : ITableEntity
         set => Weight = decimal.Parse(value, CultureInfo.InvariantCulture);
     }
 
-    public string PartitionKey { get; set; }
-    public string RowKey { get; set; }
+    public string PartitionKey { get; set; } = "WeightEntries";
+    public string RowKey { get; set; } = null!;
 
-    public ETag ETag { get; set; }
+    public ETag ETag { get; set; } = ETag.All;
     public DateTimeOffset? Timestamp { get; set; }
 }

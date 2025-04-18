@@ -1,3 +1,3 @@
-namespace Api.Controllers;
+namespace Api.Controllers.Models;
 
-public record WeightsCollection(IEnumerable<WeightRecord> WeightRecords);
+public record WeightsCollection(IEnumerable<WeightRecord>? WeightRecords);

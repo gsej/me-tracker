@@ -1,3 +1,4 @@
+using Api.Controllers.Models;
 using Api.Filters;
 using Azure;
 using Azure.Data.Tables;
@@ -21,21 +22,14 @@ public class WeightController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<IActionResult> PostWeightRecord([FromBody] WeightRecord weightRecord)
+    public async Task<IActionResult> PostWeightRecord([FromBody] CreateWeightRecordRequest request)
     {
         var tableName = "Weights";
         var tableClient = _tableServiceClient.GetTableClient(tableName);
         
         await tableClient.CreateIfNotExistsAsync();
 
-        var entity = new WeightEntity
-        {
-            Date = weightRecord.Date,
-            Weight = weightRecord.Weight,
-            PartitionKey = "WeightEntries",
-            RowKey = Guid.NewGuid().ToString(),
-            ETag = ETag.All
-        };
+        var entity = new WeightEntity(Guid.NewGuid(), request.Date, request.Weight);
         
         await tableClient.AddEntityAsync(entity);
 

@@ -1,3 +1,3 @@
-namespace Api.Controllers;
+namespace Api.Controllers.Models;
 
-public record WeightRecord(DateTime Date, decimal Weight);
+public record WeightRecord(Guid WeightId, DateTime Date, decimal Weight);
