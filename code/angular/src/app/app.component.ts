@@ -1,5 +1,5 @@
 import { Component, ViewChild, ElementRef, AfterViewInit, HostListener } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
+import { RouterOutlet, Router, ActivatedRoute } from '@angular/router';
 import { ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { SettingsService } from './settings/settings.service';
@@ -31,12 +31,26 @@ export class AppComponent implements AfterViewInit {
 
   @ViewChild('pagesContainer') pagesContainer!: ElementRef;
 
-  constructor(settingsService: SettingsService) {
+  constructor(
+    settingsService: SettingsService,
+    private router: Router,
+    private route: ActivatedRoute
+  ) {
     this.gitHash = settingsService.settings.gitHash;
   }
 
   ngAfterViewInit() {
-    this.updatePagePosition();
+    // Get initial page from URL parameter
+    this.route.queryParams.subscribe(params => {
+      const page = params['page'];
+      if (page !== undefined) {
+        const pageNum = parseInt(page, 10);
+        if (!isNaN(pageNum) && pageNum >= 0 && pageNum < this.totalPages) {
+          this.currentPage = pageNum;
+        }
+      }
+      this.updatePagePosition();
+    });
   }
 
   onTouchStart(event: TouchEvent) {
@@ -67,6 +81,12 @@ export class AppComponent implements AfterViewInit {
   goToPage(pageIndex: number) {
     if (pageIndex >= 0 && pageIndex < this.totalPages) {
       this.currentPage = pageIndex;
+      // Update URL with the current page
+      this.router.navigate([], {
+        relativeTo: this.route,
+        queryParams: { page: pageIndex },
+        queryParamsHandling: 'merge'
+      });
       this.updatePagePosition();
     }
   }
