@@ -25,7 +25,7 @@ export class AppComponent implements AfterViewInit {
   title = 'me-tracker';
   public gitHash: string = 'not set';
 
-  currentPage: number = 1;
+  currentPage: number = 0;
   totalPages: number = 2;
   startX: number = 0;
 
