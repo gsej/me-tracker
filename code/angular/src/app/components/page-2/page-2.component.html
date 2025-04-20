@@ -1,39 +1,6 @@
 <div class="w-full h-full flex flex-col items-center p-4 overflow-auto">
   <div class="w-full">
     <h2 class="text-xl font-bold text-blue-500 mb-4 text-center">Weight History</h2>
-
-    <div *ngIf="isLoading" class="text-center py-4">
-      <p class="text-gray-500">Loading weight records...</p>
-    </div>
-
-    <div *ngIf="error" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-      <p>{{ error }}</p>
-      <button class="mt-2 bg-red-500 hover:bg-red-600 text-white py-1 px-3 rounded text-sm" (click)="loadWeightRecords()">
-        Try Again
-      </button>
-    </div>
-
-    <div *ngIf="!isLoading && !error">
-      <div *ngIf="weightRecords.length === 0" class="text-center py-4">
-        <p class="text-gray-500">No weight records found.</p>
-      </div>
-
-      <div *ngIf="weightRecords.length > 0" class="bg-white rounded-lg shadow-md overflow-hidden">
-        <table class="min-w-full">
-          <thead class="bg-gray-50 border-b">
-            <tr>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Weight (kg)</th>
-            </tr>
-          </thead>
-          <tbody class="divide-y divide-gray-200">
-            <tr *ngFor="let record of weightRecords" class="hover:bg-gray-50">
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ record.date }}</td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ record.weight }}</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
+    <app-weight-records></app-weight-records>
   </div>
 </div>
