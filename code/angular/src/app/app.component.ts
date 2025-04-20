@@ -24,29 +24,29 @@ import { Page2Component } from './components/page-2/page-2.component';
 export class AppComponent implements AfterViewInit {
   title = 'me-tracker';
   public gitHash: string = 'not set';
-  
-  currentPage: number = 0;
+
+  currentPage: number = 1;
   totalPages: number = 2;
   startX: number = 0;
-  
+
   @ViewChild('pagesContainer') pagesContainer!: ElementRef;
-  
+
   constructor(settingsService: SettingsService) {
     this.gitHash = settingsService.settings.gitHash;
   }
-  
+
   ngAfterViewInit() {
     this.updatePagePosition();
   }
-  
+
   onTouchStart(event: TouchEvent) {
     this.startX = event.touches[0].clientX;
   }
-  
+
   onTouchMove(event: TouchEvent) {
     const currentX = event.touches[0].clientX;
     const diff = this.startX - currentX;
-    
+
     if (Math.abs(diff) > 50) {
       if (diff > 0 && this.currentPage < this.totalPages - 1) {
         // Swipe left
@@ -58,19 +58,19 @@ export class AppComponent implements AfterViewInit {
       this.startX = currentX;
     }
   }
-  
+
   @HostListener('window:resize')
   onResize() {
     this.updatePagePosition();
   }
-  
+
   goToPage(pageIndex: number) {
     if (pageIndex >= 0 && pageIndex < this.totalPages) {
       this.currentPage = pageIndex;
       this.updatePagePosition();
     }
   }
-  
+
   private updatePagePosition() {
     if (this.pagesContainer) {
       const containerElement = this.pagesContainer.nativeElement;

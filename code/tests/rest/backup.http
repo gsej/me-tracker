@@ -22,3 +22,132 @@ X-Api-Key: apikey
         }
     ]
 }
+
+### Restore nothing data
+POST http://localhost:5200/api/backup/restore
+Content-Type: application/json
+X-Api-Key: apikey
+
+{
+    "weightRecords": []
+}
+
+### Restore big data
+POST http://localhost:5200/api/backup/restore
+Content-Type: application/json
+X-Api-Key: apikey
+
+{
+  "weightRecords": [
+    {
+      "weightId": "955c82e8-124a-427b-9160-358db7e51e41",
+      "date": "2025-04-10T00:00:00Z",
+      "weight": 71
+    },
+    {
+      "weightId": "5bf0a60a-58d9-4136-8b4c-85a82e34fb02",
+      "date": "2025-04-11T00:00:00Z",
+      "weight": 70.5
+    },
+    {
+      "weightId": "a7363de3-fbdf-47af-a018-d572944b782e",
+      "date": "2025-04-20T07:09:27.78Z",
+      "weight": 99
+    },
+    {
+      "weightId": "cb46b457-58e6-4e11-b681-cd03e568bae6",
+      "date": "2025-04-20T07:13:01.801Z",
+      "weight": 88
+    },
+    {
+      "weightId": "e2e54dac-6cd1-49e6-a2ed-ce3f4d970741",
+      "date": "2025-04-20T07:13:10.458Z",
+      "weight": 11
+    },
+    {
+      "weightId": "25e11c84-7271-432d-82eb-c78e942828b8",
+      "date": "2025-04-20T07:20:50.024Z",
+      "weight": 123
+    },
+    {
+      "weightId": "e580d732-6a7d-494a-8d00-dbada2fd5601",
+      "date": "2025-04-20T07:51:04.638Z",
+      "weight": 77
+    },
+    {
+      "weightId": "956ca299-0aed-4e6e-a3d4-99f8b3122253",
+      "date": "2025-04-20T07:51:07.683Z",
+      "weight": 87
+    },
+    {
+      "weightId": "93b3f873-c25a-4aa9-887b-81c2b85dca2d",
+      "date": "2025-04-20T07:51:09.254Z",
+      "weight": 99
+    },
+    {
+      "weightId": "d23566a7-3ea0-49f7-a815-dc177ab1a6fb",
+      "date": "2025-04-20T07:51:10.851Z",
+      "weight": 121
+    },
+    {
+      "weightId": "6a8ed163-eb91-4f44-91a5-bac57894331f",
+      "date": "2025-04-20T07:51:12.012Z",
+      "weight": 32
+    },
+    {
+      "weightId": "0640f9d0-6320-46df-8e40-3572676feae6",
+      "date": "2025-04-20T07:51:12.59Z",
+      "weight": 453
+    },
+    {
+      "weightId": "4ddc1f11-ab4e-49b4-8f91-d2c306f78cad",
+      "date": "2025-04-20T07:51:13.303Z",
+      "weight": 231
+    },
+    {
+      "weightId": "9d41e341-89a9-42da-bf46-eef53e68ca27",
+      "date": "2025-04-20T07:51:13.704Z",
+      "weight": 131
+    },
+    {
+      "weightId": "b19446c7-ed6e-4a01-9264-4f2a730a3d54",
+      "date": "2025-04-20T07:51:14.188Z",
+      "weight": 3
+    },
+    {
+      "weightId": "ee596514-fb69-4d82-84eb-fbcbc0c8ce30",
+      "date": "2025-04-20T07:51:14.618Z",
+      "weight": 231
+    },
+    {
+      "weightId": "d2286315-3f3c-487f-a8c1-63bf70fb0f5f",
+      "date": "2025-04-20T07:51:14.99Z",
+      "weight": 1
+    },
+    {
+      "weightId": "c68c7a7a-4fb1-46c7-958e-d7717d70d630",
+      "date": "2025-04-20T07:51:15.342Z",
+      "weight": 12
+    },
+    {
+      "weightId": "ab1675d1-a163-4590-9910-149749c3755f",
+      "date": "2025-04-20T07:51:18.628Z",
+      "weight": 213
+    },
+    {
+      "weightId": "7a0943b8-2ddb-48af-9756-211c06b1e293",
+      "date": "2025-04-20T07:51:19.34Z",
+      "weight": 13
+    },
+    {
+      "weightId": "974bdf48-1a13-4496-9e93-e5151d202063",
+      "date": "2025-04-20T07:51:19.9Z",
+      "weight": 13
+    },
+    {
+      "weightId": "d7188852-612c-43b1-a468-233df199b9f3",
+      "date": "2025-04-20T07:51:20.604Z",
+      "weight": 13
+    }
+  ]
+}
