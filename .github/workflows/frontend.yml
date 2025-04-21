@@ -77,7 +77,7 @@ jobs:
 
       - name: select icon
         run: |
-         cp ./${{ARTIFACTS_DIR}}/icons/icon-scale.dev.png ./${{ARTIFACTS_DIR}}/icons/icon-scale.png
+          cp ./${{ env.ARTIFACTS_DIR }}/icons/icon-scale.dev.svg ./${{ env.ARTIFACTS_DIR }}/icons/icon-scale.svg
 
       - name: configure github pages
         uses: actions/configure-pages@v4
