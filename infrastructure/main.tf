@@ -26,8 +26,8 @@ resource "azurerm_service_plan" "plan" {
   sku_name            = "B1"
 }
 
-resource "azurerm_linux_web_app" "linuxapp" {
-  name                = "app-${var.environment}-${var.service_name}"
+resource "azurerm_linux_web_app" "api" {
+  name                = "api-${var.environment}-${var.service_name}"
   resource_group_name = azurerm_resource_group.group.name
   service_plan_id     = azurerm_service_plan.plan.id
   location            = azurerm_resource_group.group.location 
@@ -41,21 +41,20 @@ resource "azurerm_linux_web_app" "linuxapp" {
   app_settings = {
       APPINSIGHTS_INSTRUMENTATIONKEY = azurerm_application_insights.appinsights.instrumentation_key
       ApiKey                         = var.api_key,
-     StorageAccountConnectionString  = azurerm_storage_account.storage.primary_connection_string      
+      StorageAccountConnectionString  = azurerm_storage_account.storage.primary_connection_string      
   }
 }
 
 resource "azurerm_user_assigned_identity" "github_identity" {
   name                = "mi-${var.environment}-${var.service_name}"
   resource_group_name = azurerm_resource_group.group.name
-  location            = azurerm_resource_group.group.location
-  
+  location            = azurerm_resource_group.group.location  
 }
 
 # add a role assignment to the managed identity, with the role website contributor and the resource
 # being the app service previously created 
 resource "azurerm_role_assignment" "role_assignment" {
-  scope                = azurerm_linux_web_app.linuxapp.id
+  scope                = azurerm_linux_web_app.api.id
   role_definition_name = "Contributor"
   principal_id         = azurerm_user_assigned_identity.github_identity.principal_id
 }

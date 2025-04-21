@@ -12,7 +12,7 @@ jobs:
     env:
       WORKING_DIR: code/angular
       BUILD_OUTPUT_DIR: dist/me-tracker/browser
-      API_URL: https://app-dev-me-tracker.azurewebsites.net
+      API_URL: https://api-dev-me-tracker.azurewebsites.net
     
     steps: 
       - name: checkout repo
