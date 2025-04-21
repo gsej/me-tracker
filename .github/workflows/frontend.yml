@@ -22,11 +22,7 @@ jobs:
         uses: actions/setup-node@v4
 
         with:
-          node-version: '20.x'
-
-      - name: select icon
-        run: |
-         cp ./${WORKING_DIR}/public/icons/icon-scale.dev.png ./${WORKING_DIR}/public/icons/icon-scale.png
+          node-version: '20.x'    
 
       - run: npm install
         working-directory: ${{ env.WORKING_DIR }}
@@ -71,7 +67,18 @@ jobs:
         with:
           name: webui
           path: ${{ env.ARTIFACTS_DIR }}
-  
+
+      - name: show directory structure
+        run: |
+          echo "Directory structure:"
+          find ./${{ env.ARTIFACTS_DIR }} -type d -print
+          echo "File structure:"
+          find ./${{ env.ARTIFACTS_DIR }} -type f -print
+
+      - name: select icon
+        run: |
+         cp ./${{ARTIFACTS_DIR}}/icons/icon-scale.dev.png ./${{ARTIFACTS_DIR}}/icons/icon-scale.png
+
       - name: configure github pages
         uses: actions/configure-pages@v4
         with:
