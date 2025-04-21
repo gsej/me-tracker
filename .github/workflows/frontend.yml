@@ -24,6 +24,10 @@ jobs:
         with:
           node-version: '20.x'
 
+      - name: select icon
+        run: |
+         cp ./${WORKING_DIR}/public/icons/icon-scale.dev.png ./${WORKING_DIR}/public/icons/icon-scale.png
+
       - run: npm install
         working-directory: ${{ env.WORKING_DIR }}
 
