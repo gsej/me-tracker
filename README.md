@@ -1,7 +1,10 @@
 # me-tracker
 
+# 
 
 # TODO: 
 
-make the main area responsive so it doesn't spread out on big screens
+Create a separate production deployment (both webui and api hosted in Azure)
+Create pipeline to regularly backup the production data
 
+Create third page showing weight loss statistics

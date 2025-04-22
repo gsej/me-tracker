@@ -6,11 +6,7 @@ variable service_name {
   default = "me-tracker"
 }
 
-variable environment {
-    default = "dev"
-}
-
-variable "api_key" {
+variable "api_key_dev" {
     description = "API key for the web application"
     sensitive   = true
 }

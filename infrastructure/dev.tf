@@ -1,17 +1,20 @@
+# infrastructure for the dev environment.
+# It's different to the prod environment because the angular front end is hosted in github pages
+
 resource "azurerm_resource_group" "group" {
-  name     = "rg-${var.environment}-${var.service_name}"
+  name     = "rg-dev-${var.service_name}"
   location = var.location
 }
 
 resource "azurerm_log_analytics_workspace" "log_analytics_workspace" {
-  name                = "la-${var.environment}-${var.service_name}"
+  name                = "la-dev-${var.service_name}"
   location            = azurerm_resource_group.group.location
   resource_group_name = azurerm_resource_group.group.name
   retention_in_days   = 30
 }
 
 resource "azurerm_application_insights" "appinsights" {
-  name                = "ai-${var.environment}-${var.service_name}"
+  name                = "ai-dev-${var.service_name}"
   location            = azurerm_resource_group.group.location
   resource_group_name = azurerm_resource_group.group.name
   application_type    = "web"
@@ -19,7 +22,7 @@ resource "azurerm_application_insights" "appinsights" {
 }
 
 resource "azurerm_service_plan" "plan" {
-  name                = "asp-${var.environment}-${var.service_name}"
+  name                = "asp-dev-${var.service_name}"
   resource_group_name = azurerm_resource_group.group.name
   location            = azurerm_resource_group.group.location
   os_type             = "Linux"
@@ -27,7 +30,7 @@ resource "azurerm_service_plan" "plan" {
 }
 
 resource "azurerm_linux_web_app" "api" {
-  name                = "api-${var.environment}-${var.service_name}"
+  name                = "api-dev-${var.service_name}"
   resource_group_name = azurerm_resource_group.group.name
   service_plan_id     = azurerm_service_plan.plan.id
   location            = azurerm_resource_group.group.location 
@@ -40,13 +43,13 @@ resource "azurerm_linux_web_app" "api" {
 
   app_settings = {
       APPINSIGHTS_INSTRUMENTATIONKEY = azurerm_application_insights.appinsights.instrumentation_key
-      ApiKey                         = var.api_key,
+      ApiKey                         = var.api_key_dev,
       StorageAccountConnectionString  = azurerm_storage_account.storage.primary_connection_string      
   }
 }
 
 resource "azurerm_user_assigned_identity" "github_identity" {
-  name                = "mi-${var.environment}-${var.service_name}"
+  name                = "mi-dev-${var.service_name}"
   resource_group_name = azurerm_resource_group.group.name
   location            = azurerm_resource_group.group.location  
 }
@@ -65,12 +68,12 @@ resource "azurerm_federated_identity_credential" "github_federated_identity" {
   audience            = ["api://AzureADTokenExchange"]
   issuer              = "https://token.actions.githubusercontent.com"
   parent_id           = azurerm_user_assigned_identity.github_identity.id
-  subject             = "repo:gsej/me-tracker:environment:Production"
+  subject             = "repo:gsej/me-tracker:environment:dev"
 }
 
 
 resource "azurerm_storage_account" "storage" {
-  name                     = replace("st${var.environment}${var.service_name}", "-", "")
+  name                     = replace("stdev${var.service_name}", "-", "")
   resource_group_name      = azurerm_resource_group.group.name
   location                 = azurerm_resource_group.group.location
   account_tier             = "Standard"
