@@ -18,7 +18,7 @@ resource "azurerm_application_insights" "appinsights" {
   location            = azurerm_resource_group.group.location
   resource_group_name = azurerm_resource_group.group.name
   application_type    = "web"
-   workspace_id       = azurerm_log_analytics_workspace.log_analytics_workspace.id
+  workspace_id        = azurerm_log_analytics_workspace.log_analytics_workspace.id
 }
 
 resource "azurerm_service_plan" "plan" {
@@ -33,25 +33,27 @@ resource "azurerm_linux_web_app" "api" {
   name                = "api-dev-${var.service_name}"
   resource_group_name = azurerm_resource_group.group.name
   service_plan_id     = azurerm_service_plan.plan.id
-  location            = azurerm_resource_group.group.location 
-    
+  location            = azurerm_resource_group.group.location
+
   site_config {
-     application_stack {
+    application_stack {
       dotnet_version = "8.0"
     }
+
+    health_check_path = "/api/healthz"
   }
 
   app_settings = {
-      APPINSIGHTS_INSTRUMENTATIONKEY = azurerm_application_insights.appinsights.instrumentation_key
-      ApiKey                         = var.api_key_dev,
-      StorageAccountConnectionString  = azurerm_storage_account.storage.primary_connection_string      
+    APPINSIGHTS_INSTRUMENTATIONKEY = azurerm_application_insights.appinsights.instrumentation_key
+    ApiKey                         = var.api_key_dev,
+    StorageAccountConnectionString = azurerm_storage_account.storage.primary_connection_string
   }
 }
 
 resource "azurerm_user_assigned_identity" "github_identity" {
   name                = "mi-dev-${var.service_name}"
   resource_group_name = azurerm_resource_group.group.name
-  location            = azurerm_resource_group.group.location  
+  location            = azurerm_resource_group.group.location
 }
 
 # add a role assignment to the managed identity, with the role website contributor and the resource
@@ -77,7 +79,7 @@ resource "azurerm_storage_account" "storage" {
   resource_group_name      = azurerm_resource_group.group.name
   location                 = azurerm_resource_group.group.location
   account_tier             = "Standard"
-  account_replication_type = "LRS"  
-  
-  min_tls_version         = "TLS1_2"
+  account_replication_type = "LRS"
+
+  min_tls_version = "TLS1_2"
 }
