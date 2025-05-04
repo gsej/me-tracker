@@ -11,9 +11,7 @@ namespace Api.Controllers;
 [ServiceFilter(typeof(ApiKeyAuthFilter))]
 public class BackupController : ControllerBase
 {
-    private const string TableName = "Weights";
-    private const string PartitionKey = "WeightEntries";
-    private readonly TableServiceClient _tableServiceClient;
+   private readonly TableServiceClient _tableServiceClient;
 
     public BackupController(TableServiceClient tableServiceClient)
     {
@@ -23,14 +21,14 @@ public class BackupController : ControllerBase
     [HttpGet]
     public async Task<WeightsCollection> GetAllWeightRecords()
     {
-        var tableClient = _tableServiceClient.GetTableClient(TableName);
+        var tableClient = _tableServiceClient.GetTableClient(Constants.TableName);
 
         // Ensure the table exists
         await tableClient.CreateIfNotExistsAsync();
 
         var weightRecords = new List<WeightRecord>();
         var queryResults = tableClient
-            .QueryAsync<WeightEntity>($"PartitionKey eq '{PartitionKey}'");
+            .QueryAsync<WeightEntity>($"PartitionKey eq '{Constants.PartitionKey}'");
 
         await foreach (var entity in queryResults)
         {
@@ -48,12 +46,12 @@ public class BackupController : ControllerBase
         if (records == null || records.WeightRecords == null)
             return BadRequest("No records provided");
 
-        var tableClient = _tableServiceClient.GetTableClient(TableName);
+        var tableClient = _tableServiceClient.GetTableClient(Constants.TableName);
         
         await tableClient.CreateIfNotExistsAsync();
         
-        var existingRecords = tableClient.QueryAsync<WeightEntity>($"PartitionKey eq '{PartitionKey}'");
-        await foreach (var entity in existingRecords) await tableClient.DeleteEntityAsync(PartitionKey, entity.RowKey);
+        var existingRecords = tableClient.QueryAsync<WeightEntity>($"PartitionKey eq '{Constants.PartitionKey}'");
+        await foreach (var entity in existingRecords) await tableClient.DeleteEntityAsync(Constants.PartitionKey, entity.RowKey);
 
         foreach (var weightRecord in records.WeightRecords)
         {

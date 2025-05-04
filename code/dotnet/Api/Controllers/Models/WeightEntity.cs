@@ -5,8 +5,16 @@ using Azure.Data.Tables;
 
 namespace Api.Controllers.Models;
 
+public static class Constants
+{
+    public const string TableName = "Weights";
+    public const string PartitionKey = "WeightEntries";
+}
+
 public class WeightEntity : ITableEntity
 {
+    
+    
     public WeightEntity()
     {
     }
@@ -33,7 +41,7 @@ public class WeightEntity : ITableEntity
         set => Weight = decimal.Parse(value, CultureInfo.InvariantCulture);
     }
 
-    public string PartitionKey { get; set; } = "WeightEntries";
+    public string PartitionKey { get; set; } = Constants.PartitionKey;
     public string RowKey { get; set; } = null!;
 
     public ETag ETag { get; set; } = ETag.All;

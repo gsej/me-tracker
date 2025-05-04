@@ -20,15 +20,36 @@ public class WeightController : ControllerBase
         _tableServiceClient = tableServiceClient;
     }
     
+    [HttpGet("/api/weights")]
+    public async Task<WeightsCollection> GetAll()
+    {
+        var tableClient = _tableServiceClient.GetTableClient(Constants.TableName);
+
+        // Ensure the table exists
+        await tableClient.CreateIfNotExistsAsync();
+
+        var weightRecords = new List<WeightRecord>();
+        var queryResults = tableClient
+            .QueryAsync<WeightEntity>($"PartitionKey eq '{Constants.PartitionKey}'");
+
+        await foreach (var entity in queryResults)
+        {
+            weightRecords.Add(new WeightRecord(entity.WeightId, entity.Date, entity.Weight));
+        }
+
+        var orderedWeightRecords = weightRecords.OrderBy(record => record.Date);
+
+        return new WeightsCollection(orderedWeightRecords);
+    }
+    
     [HttpGet("{weightId:guid}")]
     public async Task<IActionResult> GetWeightRecord(Guid weightId)
     {
-        var tableName = "Weights";
-        var tableClient = _tableServiceClient.GetTableClient(tableName);
+        var tableClient = _tableServiceClient.GetTableClient(Constants.TableName);
 
         await tableClient.CreateIfNotExistsAsync();
         
-        var queryResults = tableClient.QueryAsync<WeightEntity>($"PartitionKey eq 'WeightEntries' and WeightId eq guid'{weightId}'");
+        var queryResults = tableClient.QueryAsync<WeightEntity>($"PartitionKey eq '{Constants.PartitionKey}' and WeightId eq guid'{weightId}'");
 
         WeightEntity? entity = null;
         await foreach (var result in queryResults)
@@ -48,8 +69,7 @@ public class WeightController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> PostWeightRecord([FromBody] CreateWeightRecordRequest request)
     {
-        var tableName = "Weights";
-        var tableClient = _tableServiceClient.GetTableClient(tableName);
+        var tableClient = _tableServiceClient.GetTableClient(Constants.TableName);
         
         await tableClient.CreateIfNotExistsAsync();
 
@@ -66,12 +86,11 @@ public class WeightController : ControllerBase
     [HttpDelete("{weightId:guid}")]
     public async Task<IActionResult> DeleteWeightRecord(Guid weightId)
     {
-        var tableName = "Weights";
-        var tableClient = _tableServiceClient.GetTableClient(tableName);
+        var tableClient = _tableServiceClient.GetTableClient(Constants.TableName);
 
         await tableClient.CreateIfNotExistsAsync();
 
-        var queryResults = tableClient.QueryAsync<WeightEntity>($"PartitionKey eq 'WeightEntries' and WeightId eq guid'{weightId}'");
+        var queryResults = tableClient.QueryAsync<WeightEntity>($"PartitionKey eq '{Constants.PartitionKey}' and WeightId eq guid'{weightId}'");
 
         WeightEntity? entityToDelete = null;
         await foreach (var entity in queryResults)

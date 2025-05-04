@@ -45,7 +45,7 @@ export class WeightService {
     this.isLoadingSubject.next(true);
     this.errorSubject.next(null);
 
-    this.http.get<WeightsCollection>(`${this.apiUrl}/api/backup`, { headers: this.getHeaders() })
+    this.http.get<WeightsCollection>(`${this.apiUrl}/api/weights`, { headers: this.getHeaders() })
       .subscribe({
         next: (data) => {
           const formattedRecords = data.weightRecords.map(record => ({

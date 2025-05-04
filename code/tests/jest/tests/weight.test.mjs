@@ -2,8 +2,8 @@
 
 describe('weight', () => {
   const baseUrl = 'http://localhost:5200/api';
-  const validApiKey = 'apikey';
-
+  const validApiKey = 'apikey';  
+  
   it('should return 401 when calling get endpoint without API key', async () => {
     const response = await fetch(`${baseUrl}/weight/5bf0a60a-58d9-4136-8b4c-85a82e34fb02`);
     expect(response.status).toBe(401);
@@ -105,4 +105,7 @@ describe('weight', () => {
 
     expect(getResponse.status).toBe(404);
   });
+
+  
+
 });
