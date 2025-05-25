@@ -43,8 +43,8 @@ jobs:
       APP_NAME: api-dev-me-tracker
  
     permissions:
-      id-token: write #This is required for requesting the JWT
-      contents: read #This is required for actions/checkout
+      id-token: write # This is required for requesting the JWT
+      contents: read # This is required for actions/checkout
 
     steps:
       - name: Download artifact from build job
@@ -65,6 +65,6 @@ jobs:
         uses: azure/webapps-deploy@v3
         with:
           app-name: ${{ env.APP_NAME }}
-          slot-name: 'Production'
+          slot-name: 'production'
           package: ./publish
 

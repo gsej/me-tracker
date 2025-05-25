@@ -1,5 +1,5 @@
 # infrastructure for the dev environment.
-# It's different to the prod environment because the angular front end is hosted in github pages
+
 
 resource "azurerm_resource_group" "group" {
   name     = "rg-dev-${var.service_name}"
@@ -29,6 +29,12 @@ resource "azurerm_service_plan" "plan" {
   sku_name            = "F1"
 }
 
+resource "azurerm_static_web_app" "webui" {
+  name                = "webui-dev-${var.service_name}"
+  resource_group_name = azurerm_resource_group.group.name
+  location            = "West Europe"  
+}
+
 resource "azurerm_linux_web_app" "api" {
   name                = "api-dev-${var.service_name}"
   resource_group_name = azurerm_resource_group.group.name
@@ -46,7 +52,7 @@ resource "azurerm_linux_web_app" "api" {
 
   app_settings = {
     APPINSIGHTS_INSTRUMENTATIONKEY = azurerm_application_insights.appinsights.instrumentation_key
-    ApiKey                         = var.api_key_dev,
+    ApiKey                         = var.api_key,
     StorageAccountConnectionString = azurerm_storage_account.storage.primary_connection_string
   }
 }
@@ -58,8 +64,8 @@ resource "azurerm_user_assigned_identity" "github_identity" {
 }
 
 # add a role assignment to the managed identity, with the role website contributor and the resource
-# being the app service previously created 
-resource "azurerm_role_assignment" "role_assignment" {
+# being the api service previously created 
+resource "azurerm_role_assignment" "role_assignment_api" {
   scope                = azurerm_linux_web_app.api.id
   role_definition_name = "Contributor"
   principal_id         = azurerm_user_assigned_identity.github_identity.principal_id
@@ -73,7 +79,6 @@ resource "azurerm_federated_identity_credential" "github_federated_identity" {
   parent_id           = azurerm_user_assigned_identity.github_identity.id
   subject             = "repo:gsej/me-tracker:environment:dev"
 }
-
 
 resource "azurerm_storage_account" "storage" {
   name                     = replace("stdev${var.service_name}", "-", "")

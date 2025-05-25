@@ -1,6 +1,6 @@
 name: webui-prod
 
-on:
+on: 
   workflow_dispatch:
 
 jobs: 
@@ -20,12 +20,12 @@ jobs:
         uses: actions/setup-node@v4
 
         with:
-          node-version: '20.x'    
+          node-version: '20.x'
 
       - run: npm install
         working-directory: ${{ env.WORKING_DIR }}
 
-      - run: npm run build -- --base-href /
+      - run: npm run build -- --base-href /me-tracker/
         working-directory: ${{ env.WORKING_DIR }}
 
       - name: populate settings.json
@@ -44,20 +44,20 @@ jobs:
   deploy:
     needs: build
 
-    env:
-      APP_NAME: webui-prod-me-tracker
-      ARTIFACTS_DIR: webui
- 
     permissions:
-      id-token: write # This is required for requesting the JWT
-      contents: read # This is required for actions/checkout
+      contents: write
+      pages: write     
+      id-token: write  
 
     environment:
-      name: prod
-      url: ${{ steps.deploy-to-staticwebapp.outputs.static_web_app_url }}
+      name: production
+      url: ${{ steps.deployment.outputs.page_url }}
     
     runs-on: ubuntu-latest
 
+    env:
+      ARTIFACTS_DIR: webui
+    
     steps:
     
       - name: download built angular app
@@ -76,19 +76,17 @@ jobs:
       - name: select icon
         run: |
           cp ./${{ env.ARTIFACTS_DIR }}/icons/icon-scale.prod.svg ./${{ env.ARTIFACTS_DIR }}/icons/icon-scale.svg
-        
-      - name: Login to Azure
-        uses: azure/login@v2
+
+      - name: configure github pages
+        uses: actions/configure-pages@v4
         with:
-          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_PROD_ME_TRACKER }}
-          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_ME_TRACKER }}
-          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_ME_TRACKER }}     
-    
-      - name: Deploy to Azure Static Web App
-        id: deploy-to-staticwebapp
-        uses: Azure/static-web-apps-deploy@v1
-        with:
-          azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_PROD_ME_TRACKER }}          
-          action: "upload"
-          app_location: ${{ env.ARTIFACTS_DIR }}
-          skip_app_build: true
+          static_site_generator: next
+
+      - name: upload pages artifacts
+        uses: actions/upload-pages-artifact@v3
+        with: 
+          path: ${{ env.ARTIFACTS_DIR}}
+
+      - name: deploy to github pages
+        id: deployment
+        uses: actions/deploy-pages@v4
