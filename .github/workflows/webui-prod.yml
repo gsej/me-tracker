@@ -1,0 +1,94 @@
+name: webui-prod
+
+on:
+  workflow_dispatch:
+
+jobs: 
+  build:
+    runs-on: ubuntu-latest
+
+    env:
+      WORKING_DIR: code/angular
+      BUILD_OUTPUT_DIR: dist/me-tracker/browser
+      API_URL: https://api-prod-me-tracker.azurewebsites.net
+    
+    steps: 
+      - name: checkout repo
+        uses: actions/checkout@v4
+
+      - name: use node.js
+        uses: actions/setup-node@v4
+
+        with:
+          node-version: '20.x'    
+
+      - run: npm install
+        working-directory: ${{ env.WORKING_DIR }}
+
+      - run: npm run build -- --base-href /
+        working-directory: ${{ env.WORKING_DIR }}
+
+      - name: populate settings.json
+        run: |
+          cd ./${WORKING_DIR}/${{ env.BUILD_OUTPUT_DIR }}
+          export GITHASH="$(git rev-parse HEAD)"
+          envsubst < settings.template.json > settings.json
+          cat ./settings.json
+
+      - name: upload built angular app
+        uses: actions/upload-artifact@v4
+        with:
+          name: webui
+          path: ${{ env.WORKING_DIR }}/${{ env.BUILD_OUTPUT_DIR }}
+
+  deploy:
+    needs: build
+
+    env:
+      APP_NAME: webui-prod-me-tracker
+      ARTIFACTS_DIR: webui
+ 
+    permissions:
+      id-token: write # This is required for requesting the JWT
+      contents: read # This is required for actions/checkout
+
+    environment:
+      name: prod
+      url: ${{ steps.deploy-to-staticwebapp.outputs.static_web_app_url }}
+    
+    runs-on: ubuntu-latest
+
+    steps:
+    
+      - name: download built angular app
+        uses: actions/download-artifact@v4
+        with:
+          name: webui
+          path: ${{ env.ARTIFACTS_DIR }}
+
+      - name: show directory structure
+        run: |
+          echo "Directory structure:"
+          find ./${{ env.ARTIFACTS_DIR }} -type d -print
+          echo "File structure:"
+          find ./${{ env.ARTIFACTS_DIR }} -type f -print
+
+      - name: select icon
+        run: |
+          cp ./${{ env.ARTIFACTS_DIR }}/icons/icon-scale.prod.svg ./${{ env.ARTIFACTS_DIR }}/icons/icon-scale.svg
+        
+      - name: Login to Azure
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_PROD_ME_TRACKER }}
+          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_ME_TRACKER }}
+          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_ME_TRACKER }}     
+    
+      - name: Deploy to Azure Static Web App
+        id: deploy-to-staticwebapp
+        uses: Azure/static-web-apps-deploy@v1
+        with:
+          azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_PROD_ME_TRACKER }}          
+          action: "upload"
+          app_location: ${{ env.ARTIFACTS_DIR }}
+          skip_app_build: true
