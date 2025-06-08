@@ -7,6 +7,7 @@ import { PiComponent } from './components/pi/pi.component';
 import { ApiKeyInputComponent } from './components/api-key-input/api-key-input.component';
 import { Page1Component } from './components/page-1/page-1.component';
 import { Page2Component } from './components/page-2/page-2.component';
+import { Page3Component } from './components/page-3/page-3.component';
 
 @Component({
   selector: 'app-root',
@@ -16,6 +17,7 @@ import { Page2Component } from './components/page-2/page-2.component';
     CommonModule,
     Page1Component,
     Page2Component,
+    Page3Component,
     PiComponent,
     ApiKeyInputComponent],
   templateUrl: './app.component.html',
@@ -26,7 +28,7 @@ export class AppComponent implements AfterViewInit {
   public gitHash: string = 'not set';
 
   currentPage: number = 0;
-  totalPages: number = 2;
+  totalPages: number = 3;
   startX: number = 0;
 
   // Flag to track if this is the initial page load
