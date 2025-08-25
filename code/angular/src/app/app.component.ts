@@ -73,7 +73,7 @@ export class AppComponent implements AfterViewInit {
     const currentX = event.touches[0].clientX;
     const diff = this.startX - currentX;
 
-    if (Math.abs(diff) > 50) {
+    if (Math.abs(diff) > 100) {
       if (diff > 0 && this.currentPage < this.totalPages - 1) {
         // Swipe left
         this.goToPage(this.currentPage + 1);
