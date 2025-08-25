@@ -44,7 +44,7 @@ export class WeightReportService {
     });
   }
 
-  loadWeightRecords(): void {
+  loadWeightReport(): void {
     this.isLoadingSubject.next(true);
     this.errorSubject.next(null);
 
@@ -52,18 +52,18 @@ export class WeightReportService {
       .subscribe({
         next: (data) => {
 
-        const sortedEntries = [...data.entries].sort((a, b) => {
-          return new Date(b.date).getTime() - new Date(a.date).getTime();
-        });
+          const sortedEntries = [...data.entries].sort((a, b) => {
+            return new Date(b.date).getTime() - new Date(a.date).getTime();
+          });
 
-        const formattedRecords = sortedEntries.map(entry => ({
+          const formattedRecords = sortedEntries.map(entry => ({
             date: new Date(entry.date).toLocaleDateString(),
             recordedWeight: entry.recordedWeight,
             averageWeight: entry.averageWeight,
             bmi: entry.bmi,
             weekChange: entry.weekChange
           }));
-          this.weightReportSubject.next({ entries: formattedRecords  });
+          this.weightReportSubject.next({ entries: formattedRecords });
           this.isLoadingSubject.next(false);
         },
         error: (error) => {

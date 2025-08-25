@@ -17,7 +17,7 @@ export interface WeightsCollection {
   providedIn: 'root'
 })
 export class WeightService {
-  
+
   private weightRecordsSubject = new BehaviorSubject<WeightRecord[]>([]);
   public weightRecords$ = this.weightRecordsSubject.asObservable();
 
@@ -49,7 +49,12 @@ export class WeightService {
     this.http.get<WeightsCollection>(`${this.apiUrl}/api/weights`, { headers: this.getHeaders() })
       .subscribe({
         next: (data) => {
-          const formattedRecords = data.weightRecords.map(record => ({
+
+          const sortedRecords = [...data.weightRecords].sort((a, b) => {
+            return new Date(b.date).getTime() - new Date(a.date).getTime();
+          });
+          
+          const formattedRecords = sortedRecords.map(record => ({
             date: new Date(record.date).toLocaleDateString(),
             weight: record.weight
           }));

@@ -46,7 +46,7 @@ export class WeightReportComponent implements OnInit, OnDestroy {
   }
 
   loadWeightRecords(): void {
-    this.weightReportService.loadWeightRecords();
+    this.weightReportService.loadWeightReport();
   }
 
   onRetry(): void {
