@@ -11,12 +11,14 @@ namespace Api.Controllers.Report;
 public class ReportController : ControllerBase
 {
     private readonly TableServiceClient _tableServiceClient;
+    private readonly ReportHandler _reportHandler;
 
-    public ReportController(TableServiceClient tableServiceClient)
+    public ReportController(TableServiceClient tableServiceClient, ReportHandler reportHandler)
     {
         _tableServiceClient = tableServiceClient;
+        _reportHandler = reportHandler;
     }
-    
+     
     [HttpGet]
     public async Task<WeightReport> Get()
     {
@@ -32,9 +34,7 @@ public class ReportController : ControllerBase
             weightEntities.Add(entity);
         }
         
-        var reportHandler = new ReportHandler();
-        
-        var report = reportHandler.GetReport(weightEntities);
+        var report = _reportHandler.GetReport(weightEntities);
 
         return report;
     }

@@ -1,4 +1,5 @@
 using Api.Controllers;
+using Api.Controllers.Report;
 using Api.Filters;
 using Azure.Data.Tables;
 using Microsoft.OpenApi.Models;
@@ -24,9 +25,7 @@ public static class Program
                     policy.AllowAnyMethod();
                     policy.AllowAnyHeader();
                 });
-        });      
-        
-        
+        }); 
        
         builder.Services.AddControllers();
         builder.Services.AddScoped<ApiKeyAuthFilter>();
@@ -66,6 +65,9 @@ public static class Program
             var connectionString = configuration["StorageAccountConnectionString"];
             return new TableServiceClient(connectionString);
         });
+
+        builder.Services.AddSingleton(new Settings());
+        builder.Services.AddScoped<ReportHandler>();
         
         var app = builder.Build();
 

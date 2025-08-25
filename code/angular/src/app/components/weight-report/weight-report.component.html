@@ -8,24 +8,26 @@
 }
 
 @if (!isLoading && !error) {
-  @if (weightRecords.length === 0) {
+  @if (weightReport === null || weightReport.entries.length === 0) {
     <div class="text-center py-4">
       <p class="text-gray-500">No weight report found.</p>
     </div>
   }
 
-  @if(weightRecords.length > 0) {
+  @if(weightReport !== null && weightReport.entries.length > 0) {
     <table class="min-w-full">
       <thead class="bg-gray-50 border-b sticky top-0 z-10">
         <tr>
           <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-          <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Weight (kg)</th>
+          <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Recorded Weight (kg)</th>
+          <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Average Weight (kg)</th>
         </tr>
       </thead>
       <tbody class="divide-y divide-gray-200">
-        <tr *ngFor="let record of weightRecords" class="hover:bg-gray-50">
-          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ record.date }}</td>
-          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">{{ record.weight | number:'1.1-1' }}</td>
+        <tr *ngFor="let entry of weightReport.entries" class="hover:bg-gray-50">
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ entry.date }}</td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">{{ entry.recordedWeight | number:'1.1-1' }}</td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">{{ entry.averageWeight | number:'1.1-1' }}</td>
         </tr>
       </tbody>
     </table>

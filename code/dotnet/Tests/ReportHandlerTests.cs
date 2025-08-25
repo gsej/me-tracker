@@ -1,11 +1,21 @@
+using Api;
 using Api.Controllers.Models;
 using Api.Controllers.Report;
 using FluentAssertions;
+using FluentAssertions.Execution;
 
 namespace Tests;
 
 public class ReportHandlerTests
 {
+    private readonly ReportHandler _reportHandler;
+    private readonly Settings _settings;
+
+    public ReportHandlerTests()
+    {
+        _settings = new Settings();
+        _reportHandler = new ReportHandler(_settings);
+    }
     [Fact]
     public void HandleShouldAverageWeightsForEachDay()
     {
@@ -24,8 +34,7 @@ public class ReportHandlerTests
             new (Guid.NewGuid(), date2, 101)
         };
 
-        var reportHandler = new ReportHandler();
-        var report = reportHandler.GetReport(weights);
+        var report = _reportHandler.GetReport(weights);
         
         var date1Entry = report.Entries.SingleOrDefault(entry => entry.Date == DateOnly.FromDateTime(date1));
         var date2Entry = report.Entries.SingleOrDefault(entry => entry.Date == DateOnly.FromDateTime(date2));
@@ -51,8 +60,8 @@ public class ReportHandlerTests
             new (Guid.NewGuid(), lastDate, 100)
         };
 
-        var reportHandler = new ReportHandler();
-        var report = reportHandler.GetReport(weights);
+        
+        var report = _reportHandler.GetReport(weights);
 
         report.Entries.Count.Should().Be(5);
         report.Entries.First().Date.Should().Be(DateOnly.FromDateTime(firstDate));
@@ -60,7 +69,7 @@ public class ReportHandlerTests
     }
     
     [Fact]
-    public void HandleShouldReturnEntriesAveragingThePrevious7Entries()
+    public void HandleShouldReturnEntriesAveragingThePrevious7Days()
     {
         var firstDate = new DateTime(2023, 10, 1);
         
@@ -76,12 +85,15 @@ public class ReportHandlerTests
             new (Guid.NewGuid(), firstDate.AddDays(7), 93),
             new (Guid.NewGuid(), firstDate.AddDays(8), 92),
             new (Guid.NewGuid(), firstDate.AddDays(9), 91),
+            new (Guid.NewGuid(), firstDate.AddDays(13), 500),
+            new (Guid.NewGuid(), firstDate.AddDays(17), 500),
         };
 
-        var reportHandler = new ReportHandler();
-        var report = reportHandler.GetReport(weights);
+        var report = _reportHandler.GetReport(weights);
         
-        report.Entries.Count.Should().Be(10);
+        using var _ = new FluentAssertions.Execution.AssertionScope();
+        
+        report.Entries.Count.Should().Be(18);
         
         report.Entries[0].RecordedWeight.Should().Be(100);
         report.Entries[0].AverageWeight.Should().Be(100);
@@ -112,5 +124,34 @@ public class ReportHandlerTests
         
         report.Entries[9].RecordedWeight.Should().Be(91);
         report.Entries[9].AverageWeight.Should().Be(94);
+        
+        report.Entries[13].RecordedWeight.Should().Be(500);
+        report.Entries[13].AverageWeight.Should().Be(194);
+        
+        report.Entries[17].RecordedWeight.Should().Be(500);
+        report.Entries[17].AverageWeight.Should().Be(500);
+    }
+    
+    [Fact]
+    public void HandleShouldReturnCalculateBmi()
+    {
+        var firstDate = new DateTime(2023, 10, 1);
+        var lastDate = new DateTime(2023, 10, 5);
+        
+        var weights = new List<WeightEntity>
+        {
+            new (Guid.NewGuid(), firstDate, 70),
+            new (Guid.NewGuid(), lastDate, 100)
+        };
+        
+        var report = _reportHandler.GetReport(weights);
+
+        using var _ = new AssertionScope();
+        
+        foreach (var entry in report.Entries)
+        {
+            var expectedBmi = Math.Round(entry.AverageWeight / (_settings.HeightInMeters * _settings.HeightInMeters), 2);
+            entry.Bmi.Should().Be(expectedBmi);
+        }
     }
 }

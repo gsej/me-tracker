@@ -31,11 +31,9 @@ export class AppComponent implements AfterViewInit {
   totalPages: number = 3;
   startX: number = 0;
 
-  // Flag to track if this is the initial page load
   isInitialLoad: boolean = true;
 
-  // Define page names for more descriptive URLs
-  pageNames: string[] = ['input', 'history'];
+  pageNames: string[] = ['input', 'history', 'report'];
 
   @ViewChild('pagesContainer') pagesContainer!: ElementRef;
 
@@ -48,18 +46,15 @@ export class AppComponent implements AfterViewInit {
   }
 
   ngAfterViewInit() {
-    // Get initial page from URL parameter
     this.route.queryParams.subscribe(params => {
       const page = params['page'];
       if (page !== undefined) {
-        // Find index of the page name in our array
         const pageIndex = this.pageNames.indexOf(page);
         if (pageIndex !== -1) {
           this.currentPage = pageIndex;
         }
       }
 
-      // Apply position immediately without transition for initial load
       if (this.isInitialLoad) {
         this.disableTransitionTemporarily();
         this.updatePagePosition();

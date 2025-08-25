@@ -4,6 +4,13 @@ namespace Api.Controllers.Report;
 
 public class ReportHandler
 {
+    private readonly Settings _settings;
+
+    public ReportHandler(Settings settings)
+    {
+        _settings = settings;
+    }
+    
     public WeightReport GetReport(IEnumerable<WeightEntity> records)
     {
         // stage 1, reduce the records to a single entry for each date, averaging the weights
@@ -26,7 +33,7 @@ public class ReportHandler
            // create an entry. it will have the current date. 
            // The weight will be the average of the weights of the previous 7 days (i.e entries from date.AddDays(-7) to the current date, taking in account missing days).
             var previousEntries = stage1Entries
-                .Where(entry => entry.Date > date.AddDays(-7) && entry.Date <= date)
+                .Where(entry => entry.Date > date.AddDays(-_settings.AverageWeightWindowInDays) && entry.Date <= date)
                 .Select(entry => entry.Weight)
                 .ToList();
 
@@ -43,8 +50,10 @@ public class ReportHandler
                 recordedWeight = previousEntries.Last();
                 movingAverageWeight = previousEntries.Average();
             }
+            
+            var bmi = Math.Round(movingAverageWeight / (_settings.HeightInMeters * _settings.HeightInMeters), 2);
 
-            var entry = new Stage2ReportEntry(date, recordedWeight, movingAverageWeight);
+            var entry = new Stage2ReportEntry(date, recordedWeight, movingAverageWeight, bmi);
             stage2Entries.Add(entry);
         }
         

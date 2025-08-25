@@ -1,25 +1,25 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { BehaviorSubject, Observable } from 'rxjs';
-import { tap } from 'rxjs/operators';
+import { BehaviorSubject } from 'rxjs';
 import { SettingsService } from '../settings/settings.service';
 
-export interface WeightRecord {
+export interface WeightReportEntry {
   date: string;
-  weight: number;
+  recordedWeight: number;
+  averageWeight: number;
 }
 
-export interface WeightsCollection {
-  weightRecords: WeightRecord[];
+export interface WeightReport {
+  entries: WeightReportEntry[];
 }
 
 @Injectable({
   providedIn: 'root'
 })
-export class WeightService {
-  
-  private weightRecordsSubject = new BehaviorSubject<WeightRecord[]>([]);
-  public weightRecords$ = this.weightRecordsSubject.asObservable();
+export class WeightReportService {
+
+  private weightReportSubject = new BehaviorSubject<WeightReport | null>(null);
+  public weightReport$ = this.weightReportSubject.asObservable();
 
   private isLoadingSubject = new BehaviorSubject<boolean>(false);
   public isLoading$ = this.isLoadingSubject.asObservable();
@@ -46,36 +46,22 @@ export class WeightService {
     this.isLoadingSubject.next(true);
     this.errorSubject.next(null);
 
-    this.http.get<WeightsCollection>(`${this.apiUrl}/api/weights`, { headers: this.getHeaders() })
+    this.http.get<WeightReport>(`${this.apiUrl}/api/report`, { headers: this.getHeaders() })
       .subscribe({
         next: (data) => {
-          const formattedRecords = data.weightRecords.map(record => ({
-            date: new Date(record.date).toLocaleDateString(),
-            weight: record.weight
+          const formattedRecords = data.entries.map(entry => ({
+            date: new Date(entry.date).toLocaleDateString(),
+            recordedWeight: entry.recordedWeight,
+            averageWeight: entry.averageWeight
           }));
-          this.weightRecordsSubject.next(formattedRecords);
+          this.weightReportSubject.next({ entries: formattedRecords  });
           this.isLoadingSubject.next(false);
         },
         error: (error) => {
-          console.error('Error fetching weight records:', error);
+          console.error('Error fetching weight report:', error);
           this.errorSubject.next(`Error: ${error.status || 'Unknown'}`);
           this.isLoadingSubject.next(false);
         }
       });
-  }
-
-  addWeightRecord(weight: number): Observable<any> {
-    const payload = {
-      weight: weight,
-      date: new Date()
-    };
-
-    return this.http.post(`${this.apiUrl}/api/weight`, payload, { headers: this.getHeaders() })
-      .pipe(
-        tap(() => {
-          // After successfully adding a new record, refresh the list
-          this.loadWeightRecords();
-        })
-      );
   }
 }
