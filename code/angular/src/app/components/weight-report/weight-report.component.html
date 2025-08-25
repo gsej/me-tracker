@@ -19,8 +19,10 @@
       <thead class="bg-gray-50 border-b sticky top-0 z-10">
         <tr>
           <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-          <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Recorded Weight (kg)</th>
-          <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Average Weight (kg)</th>
+          <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Recorded (kg)</th>
+          <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Week Average (kg)</th>
+          <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">BMI</th>
+          <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Week Change (kg)</th>
         </tr>
       </thead>
       <tbody class="divide-y divide-gray-200">
@@ -28,6 +30,8 @@
           <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ entry.date }}</td>
           <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">{{ entry.recordedWeight | number:'1.1-1' }}</td>
           <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">{{ entry.averageWeight | number:'1.1-1' }}</td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">{{ entry.bmi | number:'1.1-1' }}</td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">{{ entry.weekChange | number:'1.1-1' }}</td>
         </tr>
       </tbody>
     </table>

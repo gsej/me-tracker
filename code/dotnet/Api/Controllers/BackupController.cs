@@ -55,7 +55,10 @@ public class BackupController : ControllerBase
 
         foreach (var weightRecord in records.WeightRecords)
         {
-            var entity = new WeightEntity(weightRecord.WeightId, weightRecord.Date, weightRecord.Weight);
+            var entity = new WeightEntity(
+                weightRecord.WeightId == Guid.Empty ? Guid.NewGuid() : weightRecord.WeightId,
+                weightRecord.Date, 
+                weightRecord.Weight);
             await tableClient.AddEntityAsync(entity);
         }
 

@@ -7,6 +7,8 @@ export interface WeightReportEntry {
   date: string;
   recordedWeight: number;
   averageWeight: number;
+  bmi: number;
+  weekChange: number;
 }
 
 export interface WeightReport {
@@ -49,10 +51,17 @@ export class WeightReportService {
     this.http.get<WeightReport>(`${this.apiUrl}/api/report`, { headers: this.getHeaders() })
       .subscribe({
         next: (data) => {
-          const formattedRecords = data.entries.map(entry => ({
+
+        const sortedEntries = [...data.entries].sort((a, b) => {
+          return new Date(b.date).getTime() - new Date(a.date).getTime();
+        });
+
+        const formattedRecords = sortedEntries.map(entry => ({
             date: new Date(entry.date).toLocaleDateString(),
             recordedWeight: entry.recordedWeight,
-            averageWeight: entry.averageWeight
+            averageWeight: entry.averageWeight,
+            bmi: entry.bmi,
+            weekChange: entry.weekChange
           }));
           this.weightReportSubject.next({ entries: formattedRecords  });
           this.isLoadingSubject.next(false);

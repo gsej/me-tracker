@@ -1,6 +1,5 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { WeightService, WeightRecord } from '../../services/weight.service';
 import { Subscription } from 'rxjs';
 import { WeightReport, WeightReportService } from '../../services/weight-report.service';
 
