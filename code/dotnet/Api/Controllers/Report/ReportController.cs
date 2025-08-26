@@ -26,7 +26,7 @@ public class ReportController : ControllerBase
         await tableClient.CreateIfNotExistsAsync();
       
         var queryResults = tableClient
-            .QueryAsync<WeightEntity>($"PartitionKey eq '{Constants.PartitionKey}'");
+            .QueryAsync<WeightEntity>($"PartitionKey eq '{Constants.PartitionKey}' and Deleted eq false");
         
         var weightEntities = new List<WeightEntity>();
         await foreach (var entity in queryResults)

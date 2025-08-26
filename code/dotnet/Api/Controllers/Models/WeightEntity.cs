@@ -31,6 +31,8 @@ public class WeightEntity : ITableEntity
     
     public DateTime Date { get; init; }
 
+    public bool Deleted { get; set; } = false;
+
     [IgnoreDataMember] 
     public decimal Weight { get; set; }
 

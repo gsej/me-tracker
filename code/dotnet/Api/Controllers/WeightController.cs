@@ -1,5 +1,6 @@
 using Api.Controllers.Models;
 using Api.Filters;
+using Azure;
 using Azure.Data.Tables;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.OpenApi.Any;
@@ -30,7 +31,7 @@ public class WeightController : ControllerBase
 
         var weightRecords = new List<WeightRecord>();
         var queryResults = tableClient
-            .QueryAsync<WeightEntity>($"PartitionKey eq '{Constants.PartitionKey}'");
+            .QueryAsync<WeightEntity>($"PartitionKey eq '{Constants.PartitionKey}' and Deleted eq false");
 
         await foreach (var entity in queryResults)
         {
@@ -49,7 +50,7 @@ public class WeightController : ControllerBase
 
         await tableClient.CreateIfNotExistsAsync();
         
-        var queryResults = tableClient.QueryAsync<WeightEntity>($"PartitionKey eq '{Constants.PartitionKey}' and WeightId eq guid'{weightId}'");
+        var queryResults = tableClient.QueryAsync<WeightEntity>($"PartitionKey eq '{Constants.PartitionKey}' and WeightId eq guid'{weightId}' and Deleted eq false");
 
         WeightEntity? entity = null;
         await foreach (var result in queryResults)
@@ -101,7 +102,8 @@ public class WeightController : ControllerBase
 
         if (entityToDelete != null)
         {
-            await tableClient.DeleteEntityAsync(entityToDelete.PartitionKey, entityToDelete.RowKey);
+            entityToDelete.Deleted = true;
+            await tableClient.UpdateEntityAsync(entityToDelete, ETag.All);
         }
 
         return NoContent();

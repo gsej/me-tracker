@@ -55,4 +55,15 @@ export class WeightRecordsComponent implements OnInit, OnDestroy {
   onRetry(): void {
     this.loadWeightRecords();
   }
+
+  deleteRecord(id: string): void {
+    if (confirm('Are you sure you want to delete this weight record?')) {
+      this.weightService.deleteWeightRecord(id).subscribe({
+        error: (error) => {
+          console.error('Error deleting weight record:', error);
+          // Error will be handled by the service subscription
+        }
+      });
+    }
+  }
 }

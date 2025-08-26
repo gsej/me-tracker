@@ -5,6 +5,7 @@ import { tap } from 'rxjs/operators';
 import { SettingsService } from '../settings/settings.service';
 
 export interface WeightRecord {
+  weightId: string;
   date: string;
   weight: number;
 }
@@ -53,8 +54,9 @@ export class WeightService {
           const sortedRecords = [...data.weightRecords].sort((a, b) => {
             return new Date(b.date).getTime() - new Date(a.date).getTime();
           });
-          
+
           const formattedRecords = sortedRecords.map(record => ({
+            weightId: record.weightId,
             date: new Date(record.date).toLocaleDateString(),
             weight: record.weight
           }));
@@ -79,6 +81,16 @@ export class WeightService {
       .pipe(
         tap(() => {
           // After successfully adding a new record, refresh the list
+          this.loadWeightRecords();
+        })
+      );
+  }
+
+  deleteWeightRecord(weightId: string): Observable<any> {
+    return this.http.delete(`${this.apiUrl}/api/weight/${weightId}`, { headers: this.getHeaders() })
+      .pipe(
+        tap(() => {
+          // After successfully deleting a record, refresh the list
           this.loadWeightRecords();
         })
       );
