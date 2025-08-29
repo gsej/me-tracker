@@ -19,10 +19,9 @@ public class ReportHandler
             .Select(group => new Stage1ReportEntry(
                 group.Key,
                 group.Average(record => record.Weight)))
-            .ToList();
+            .OrderBy(record => record.Date);
 
         // stage two. 
-
         var firstDate = stage1Entries.Min(entry => entry.Date);
         var lastDate = stage1Entries.Max(entry => entry.Date);
 
@@ -34,6 +33,7 @@ public class ReportHandler
             // The weight will be the average of the weights of the previous 7 days (i.e entries from date.AddDays(-7) to the current date, taking in account missing days).
             var previousEntries = stage1Entries
                 .Where(entry => entry.Date > date.AddDays(-_settings.AverageWeightWindowInDays) && entry.Date <= date)
+                .OrderBy(entry => entry.Date)
                 .Select(entry => entry.Weight)
                 .ToList();
 
