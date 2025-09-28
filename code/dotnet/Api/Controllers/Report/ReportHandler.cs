@@ -11,7 +11,7 @@ public class ReportHandler
         _settings = settings;
     }
 
-    public WeightReport GetReport(IEnumerable<WeightEntity> records)
+    public WeightReport GetReport(IEnumerable<WeightEntity> records, int heightInCm)
     {
         // stage 1, reduce the records to a single entry for each date, averaging the weights
         var stage1Entries = records
@@ -51,7 +51,9 @@ public class ReportHandler
                 movingAverageWeight = previousEntries.Average();
             }
 
-            var bmi = Math.Round(movingAverageWeight / (_settings.HeightInMeters * _settings.HeightInMeters), 2);
+            var heightInMetres = (decimal)heightInCm / 100;
+
+            var bmi = Math.Round(movingAverageWeight / (heightInMetres * heightInMetres), 2);
 
             var lastWeekEntry = stage2Entries.SingleOrDefault(e => e.Date == date.AddDays(-7));
 

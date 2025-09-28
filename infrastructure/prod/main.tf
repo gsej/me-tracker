@@ -26,7 +26,7 @@ resource "azurerm_service_plan" "plan" {
   resource_group_name = azurerm_resource_group.group.name
   location            = azurerm_resource_group.group.location
   os_type             = "Linux"
-  sku_name            = "F1"
+  sku_name            = "B1"
 }
 
 resource "azurerm_linux_web_app" "api" {
@@ -46,7 +46,7 @@ resource "azurerm_linux_web_app" "api" {
 
   app_settings = {
     APPINSIGHTS_INSTRUMENTATIONKEY = azurerm_application_insights.appinsights.instrumentation_key
-    ApiKey                         = var.api_key_dev,
+    ApiKeys                         = var.api_keys,
     StorageAccountConnectionString = azurerm_storage_account.storage.primary_connection_string
   }
 }

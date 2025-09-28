@@ -34,7 +34,7 @@ public class ReportHandlerTests
             new (Guid.NewGuid(), "user",date2, 101)
         };
 
-        var report = _reportHandler.GetReport(weights);
+        var report = _reportHandler.GetReport(weights, 170);
         
         var date1Entry = report.Entries.SingleOrDefault(entry => entry.Date == DateOnly.FromDateTime(date1));
         var date2Entry = report.Entries.SingleOrDefault(entry => entry.Date == DateOnly.FromDateTime(date2));
@@ -59,7 +59,7 @@ public class ReportHandlerTests
             new(Guid.NewGuid(), "user", firstDate, 70), new(Guid.NewGuid(), "user", lastDate, 100)
         };
         
-        var report = _reportHandler.GetReport(weights);
+        var report = _reportHandler.GetReport(weights, 170);
 
         report.Entries.Count.Should().Be(5);
         report.Entries.First().Date.Should().Be(DateOnly.FromDateTime(firstDate));
@@ -87,7 +87,7 @@ public class ReportHandlerTests
             new(Guid.NewGuid(), "user", firstDate.AddDays(17), 500),
         };
 
-        var report = _reportHandler.GetReport(weights);
+        var report = _reportHandler.GetReport(weights, 170);
         
         using var _ = new FluentAssertions.Execution.AssertionScope();
         
@@ -141,13 +141,13 @@ public class ReportHandlerTests
             new(Guid.NewGuid(), "user", firstDate, 70), new(Guid.NewGuid(), "user", lastDate, 100)
         };
         
-        var report = _reportHandler.GetReport(weights);
+        var report = _reportHandler.GetReport(weights, 170);
 
         using var _ = new AssertionScope();
         
         foreach (var entry in report.Entries)
         {
-            var expectedBmi = Math.Round(entry.AverageWeight / (_settings.HeightInMeters * _settings.HeightInMeters), 2);
+            var expectedBmi = Math.Round(entry.AverageWeight / (1.7m * 1.7m), 2);
             entry.Bmi.Should().Be(expectedBmi);
         }
     }
