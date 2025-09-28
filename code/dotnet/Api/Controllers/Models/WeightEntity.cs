@@ -13,21 +13,22 @@ public static class Constants
 
 public class WeightEntity : ITableEntity
 {
-    
-    
     public WeightEntity()
     {
     }
     
-    public WeightEntity(Guid weightId, DateTime date, decimal weight)
+    public WeightEntity(Guid weightId, string userId, DateTime date, decimal weight)
     {
         WeightId = weightId;
+        UserId = userId;
         Date = date;
         Weight = weight;
         RowKey = Guid.NewGuid().ToString();
     }
     
     public Guid WeightId { get; init; }
+    
+    public string UserId { get; init; }
     
     public DateTime Date { get; init; }
 

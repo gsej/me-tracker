@@ -29,6 +29,7 @@ public static class Program
        
         builder.Services.AddControllers();
         builder.Services.AddScoped<ApiKeyAuthFilter>();
+        builder.Services.AddHttpContextAccessor();
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen(s =>
         {

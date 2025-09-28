@@ -52,7 +52,7 @@ resource "azurerm_linux_web_app" "api" {
 
   app_settings = {
     APPINSIGHTS_INSTRUMENTATIONKEY = azurerm_application_insights.appinsights.instrumentation_key
-    ApiKey                         = var.api_key,
+    ApiKeys                        = var.api_keys,
     StorageAccountConnectionString = azurerm_storage_account.storage.primary_connection_string
   }
 }

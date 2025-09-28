@@ -26,12 +26,12 @@ public class ReportHandlerTests
         
         var weights = new List<WeightEntity>
         {
-            new (Guid.NewGuid(), date1, 70),
-            new (Guid.NewGuid(), date1, 80),
-            new (Guid.NewGuid(), date1, 90),
-            new (Guid.NewGuid(), date2, 100),
-            new (Guid.NewGuid(), date2, 102),
-            new (Guid.NewGuid(), date2, 101)
+            new (Guid.NewGuid(), "user", date1, 70),
+            new (Guid.NewGuid(), "user",date1, 80),
+            new (Guid.NewGuid(), "user",date1, 90),
+            new (Guid.NewGuid(), "user",date2, 100),
+            new (Guid.NewGuid(), "user",date2, 102),
+            new (Guid.NewGuid(), "user",date2, 101)
         };
 
         var report = _reportHandler.GetReport(weights);
@@ -53,13 +53,11 @@ public class ReportHandlerTests
     {
         var firstDate = new DateTime(2023, 10, 1);
         var lastDate = new DateTime(2023, 10, 5);
-        
+
         var weights = new List<WeightEntity>
         {
-            new (Guid.NewGuid(), firstDate, 70),
-            new (Guid.NewGuid(), lastDate, 100)
+            new(Guid.NewGuid(), "user", firstDate, 70), new(Guid.NewGuid(), "user", lastDate, 100)
         };
-
         
         var report = _reportHandler.GetReport(weights);
 
@@ -72,21 +70,21 @@ public class ReportHandlerTests
     public void HandleShouldReturnEntriesAveragingThePrevious7Days()
     {
         var firstDate = new DateTime(2023, 10, 1);
-        
+
         var weights = new List<WeightEntity>
         {
-            new (Guid.NewGuid(), firstDate, 100),
-            new (Guid.NewGuid(), firstDate.AddDays(1), 99),
-            new (Guid.NewGuid(), firstDate.AddDays(2), 98),
-            new (Guid.NewGuid(), firstDate.AddDays(3), 97),
-            new (Guid.NewGuid(), firstDate.AddDays(4), 96),
-            new (Guid.NewGuid(), firstDate.AddDays(5), 95),
-            new (Guid.NewGuid(), firstDate.AddDays(6), 94),
-            new (Guid.NewGuid(), firstDate.AddDays(7), 93),
-            new (Guid.NewGuid(), firstDate.AddDays(8), 92),
-            new (Guid.NewGuid(), firstDate.AddDays(9), 91),
-            new (Guid.NewGuid(), firstDate.AddDays(13), 500),
-            new (Guid.NewGuid(), firstDate.AddDays(17), 500),
+            new(Guid.NewGuid(), "user", firstDate, 100),
+            new(Guid.NewGuid(), "user", firstDate.AddDays(1), 99),
+            new(Guid.NewGuid(), "user", firstDate.AddDays(2), 98),
+            new(Guid.NewGuid(), "user", firstDate.AddDays(3), 97),
+            new(Guid.NewGuid(), "user", firstDate.AddDays(4), 96),
+            new(Guid.NewGuid(), "user", firstDate.AddDays(5), 95),
+            new(Guid.NewGuid(), "user", firstDate.AddDays(6), 94),
+            new(Guid.NewGuid(), "user", firstDate.AddDays(7), 93),
+            new(Guid.NewGuid(), "user", firstDate.AddDays(8), 92),
+            new(Guid.NewGuid(), "user", firstDate.AddDays(9), 91),
+            new(Guid.NewGuid(), "user", firstDate.AddDays(13), 500),
+            new(Guid.NewGuid(), "user", firstDate.AddDays(17), 500),
         };
 
         var report = _reportHandler.GetReport(weights);
@@ -137,11 +135,10 @@ public class ReportHandlerTests
     {
         var firstDate = new DateTime(2023, 10, 1);
         var lastDate = new DateTime(2023, 10, 5);
-        
+
         var weights = new List<WeightEntity>
         {
-            new (Guid.NewGuid(), firstDate, 70),
-            new (Guid.NewGuid(), lastDate, 100)
+            new(Guid.NewGuid(), "user", firstDate, 70), new(Guid.NewGuid(), "user", lastDate, 100)
         };
         
         var report = _reportHandler.GetReport(weights);

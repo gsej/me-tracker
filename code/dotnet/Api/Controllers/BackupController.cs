@@ -1,6 +1,5 @@
 using Api.Controllers.Models;
 using Api.Filters;
-using Azure;
 using Azure.Data.Tables;
 using Microsoft.AspNetCore.Mvc;
 
@@ -32,7 +31,7 @@ public class BackupController : ControllerBase
 
         await foreach (var entity in queryResults)
         {
-            weightRecords.Add(new WeightRecord(entity.WeightId, entity.Date, entity.Weight));
+            weightRecords.Add(new WeightRecord(entity.WeightId, entity.UserId, entity.Date, entity.Weight));
         }
 
         var orderedWeightRecords = weightRecords.OrderBy(record => record.Date);
@@ -57,6 +56,7 @@ public class BackupController : ControllerBase
         {
             var entity = new WeightEntity(
                 weightRecord.WeightId == Guid.Empty ? Guid.NewGuid() : weightRecord.WeightId,
+                weightRecord.UserId,
                 weightRecord.Date, 
                 weightRecord.Weight);
             await tableClient.AddEntityAsync(entity);

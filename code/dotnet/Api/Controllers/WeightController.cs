@@ -15,27 +15,31 @@ namespace Api.Controllers;
 public class WeightController : ControllerBase
 {
     private readonly TableServiceClient _tableServiceClient;
+    private readonly IHttpContextAccessor _httpContextAccessor;
 
-    public WeightController(TableServiceClient tableServiceClient)
+    public WeightController(TableServiceClient tableServiceClient, IHttpContextAccessor httpContextAccessor)
     {
         _tableServiceClient = tableServiceClient;
+        _httpContextAccessor = httpContextAccessor;
     }
     
     [HttpGet("/api/weights")]
     public async Task<WeightsCollection> GetAll()
     {
         var tableClient = _tableServiceClient.GetTableClient(Constants.TableName);
+        
+        var userId = _httpContextAccessor.HttpContext!.Items[ApiKeyAuthFilter.UserIdKeyname];
 
         // Ensure the table exists
         await tableClient.CreateIfNotExistsAsync();
 
         var weightRecords = new List<WeightRecord>();
         var queryResults = tableClient
-            .QueryAsync<WeightEntity>($"PartitionKey eq '{Constants.PartitionKey}' and Deleted eq false");
+            .QueryAsync<WeightEntity>($"PartitionKey eq '{Constants.PartitionKey}' and UserId eq '{userId}' and Deleted eq false");
 
         await foreach (var entity in queryResults)
         {
-            weightRecords.Add(new WeightRecord(entity.WeightId, entity.Date, entity.Weight));
+            weightRecords.Add(new WeightRecord(entity.WeightId, entity.UserId, entity.Date, entity.Weight));
         }
 
         var orderedWeightRecords = weightRecords.OrderBy(record => record.Date);
@@ -64,7 +68,7 @@ public class WeightController : ControllerBase
             return NotFound($"Weight record with ID {weightId} not found.");
         }
 
-        return Ok(new WeightRecord(entity.WeightId, entity.Date, entity.Weight));
+        return Ok(new WeightRecord(entity.WeightId, entity.UserId, entity.Date, entity.Weight));
     }
 
     [HttpPost]
@@ -75,7 +79,9 @@ public class WeightController : ControllerBase
         await tableClient.CreateIfNotExistsAsync();
 
         var weightId = Guid.NewGuid();
-        var entity = new WeightEntity(weightId, request.Date, request.Weight);
+        var userId = (string)_httpContextAccessor.HttpContext!.Items[ApiKeyAuthFilter.UserIdKeyname]!;
+        
+        var entity = new WeightEntity(weightId, userId, request.Date, request.Weight);
         
         await tableClient.AddEntityAsync(entity);
             
