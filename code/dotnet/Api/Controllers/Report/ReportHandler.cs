@@ -56,8 +56,12 @@ public class ReportHandler
             var bmi = Math.Round(movingAverageWeight / (heightInMetres * heightInMetres), 2);
 
             var oneWeekChange = CalculateLastNWeekChange(stage2Entries, date, movingAverageWeight, 1);
-            var twoWeekChange = CalculateLastNWeekChange(stage2Entries, date, movingAverageWeight, 2);
-            var fourWeekChange = CalculateLastNWeekChange(stage2Entries, date, movingAverageWeight, 4);
+
+            var twoWeekAverage = CalculateMovingAverageWeight(stage1Entries, date, 14);
+            var twoWeekChange = CalculateLastNWeekChange(stage2Entries, date, twoWeekAverage, 2);
+            
+            var fourWeekAverage = CalculateMovingAverageWeight(stage1Entries, date, 28);
+            var fourWeekChange = CalculateLastNWeekChange(stage2Entries, date, fourWeekAverage, 4);
 
             var entry = new Stage2ReportEntry(date, 
                 recordedWeight, 
@@ -77,7 +81,18 @@ public class ReportHandler
         return report;
     }
 
-    private static decimal CalculateLastNWeekChange(List<Stage2ReportEntry> stage2Entries, DateOnly date, decimal movingAverageWeight, int weeks)
+    private decimal CalculateMovingAverageWeight(IOrderedEnumerable<Stage1ReportEntry> stage1Entries, DateOnly date, int windowInDays)
+    {
+        var previousEntries = stage1Entries
+            .Where(entry => entry.Date > date.AddDays(-windowInDays) && entry.Date <= date)
+            .OrderBy(entry => entry.Date)
+            .Select(entry => entry.Weight)
+            .ToList();
+
+        return previousEntries.Average();
+    }
+
+    private decimal CalculateLastNWeekChange(List<Stage2ReportEntry> stage2Entries, DateOnly date, decimal movingAverageWeight, int weeks)
     {
         var lastWeeksEntry = stage2Entries.SingleOrDefault(e => e.Date == date.AddDays(-7 * weeks));
 
@@ -86,4 +101,6 @@ public class ReportHandler
             : 0;
         return weeksChange;
     }
+    
+    
 }
