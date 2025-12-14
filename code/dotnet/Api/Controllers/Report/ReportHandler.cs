@@ -55,13 +55,17 @@ public class ReportHandler
 
             var bmi = Math.Round(movingAverageWeight / (heightInMetres * heightInMetres), 2);
 
-            var lastWeekEntry = stage2Entries.SingleOrDefault(e => e.Date == date.AddDays(-7));
+            var oneWeekChange = CalculateLastNWeekChange(stage2Entries, date, movingAverageWeight, 1);
+            var twoWeekChange = CalculateLastNWeekChange(stage2Entries, date, movingAverageWeight, 2);
+            var fourWeekChange = CalculateLastNWeekChange(stage2Entries, date, movingAverageWeight, 4);
 
-            var weekChange = lastWeekEntry != null
-                ? Math.Round(movingAverageWeight - lastWeekEntry.AverageWeight, 2)
-                : 0;
-
-            var entry = new Stage2ReportEntry(date, recordedWeight, movingAverageWeight, bmi, weekChange);
+            var entry = new Stage2ReportEntry(date, 
+                recordedWeight, 
+                movingAverageWeight, 
+                bmi, 
+                oneWeekChange,
+                twoWeekChange,
+                fourWeekChange);
             stage2Entries.Add(entry);
         }
 
@@ -71,6 +75,15 @@ public class ReportHandler
         };
 
         return report;
+    }
 
+    private static decimal CalculateLastNWeekChange(List<Stage2ReportEntry> stage2Entries, DateOnly date, decimal movingAverageWeight, int weeks)
+    {
+        var lastWeeksEntry = stage2Entries.SingleOrDefault(e => e.Date == date.AddDays(-7 * weeks));
+
+        var weeksChange = lastWeeksEntry != null
+            ? Math.Round(movingAverageWeight - lastWeeksEntry.AverageWeight, 2)
+            : 0;
+        return weeksChange;
     }
 }

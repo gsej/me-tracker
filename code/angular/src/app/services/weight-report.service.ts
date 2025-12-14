@@ -8,7 +8,9 @@ export interface WeightReportEntry {
   recordedWeight: number;
   averageWeight: number;
   bmi: number;
-  weekChange: number;
+  oneWeekChange: number;
+  twoWeekChange: number;
+  fourWeekChange: number;
 }
 
 export interface WeightReport {
@@ -61,7 +63,10 @@ export class WeightReportService {
             recordedWeight: entry.recordedWeight,
             averageWeight: entry.averageWeight,
             bmi: entry.bmi,
-            weekChange: entry.weekChange
+            oneWeekChange: entry.oneWeekChange,
+            twoWeekChange: entry.twoWeekChange,
+            fourWeekChange: entry.fourWeekChange
+
           }));
           this.weightReportSubject.next({ entries: formattedRecords });
           this.isLoadingSubject.next(false);
