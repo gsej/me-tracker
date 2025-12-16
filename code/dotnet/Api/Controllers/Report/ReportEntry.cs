@@ -8,5 +8,6 @@ public record Stage2ReportEntry(DateOnly Date,
     decimal Bmi, 
     decimal OneWeekChange,
     decimal TwoWeekChange,
-    decimal FourWeekChange
+    decimal FourWeekChange,
+    decimal TwelveWeekChange
     );

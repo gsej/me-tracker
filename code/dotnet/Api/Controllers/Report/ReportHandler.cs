@@ -19,7 +19,8 @@ public class ReportHandler
             .Select(group => new Stage1ReportEntry(
                 group.Key,
                 group.Average(record => record.Weight)))
-            .OrderBy(record => record.Date);
+            .OrderBy(record => record.Date)
+            .ToList();
 
         // stage two. 
         var firstDate = stage1Entries.Min(entry => entry.Date);
@@ -62,6 +63,9 @@ public class ReportHandler
             
             var fourWeekAverage = CalculateMovingAverageWeight(stage1Entries, date, 28);
             var fourWeekChange = CalculateLastNWeekChange(stage2Entries, date, fourWeekAverage, 4);
+            
+            var twelveWeekAverage = CalculateMovingAverageWeight(stage1Entries, date, 84);
+            var twelveWeekChange = CalculateLastNWeekChange(stage2Entries, date, twelveWeekAverage, 12);
 
             var entry = new Stage2ReportEntry(date, 
                 recordedWeight, 
@@ -69,7 +73,9 @@ public class ReportHandler
                 bmi, 
                 oneWeekChange,
                 twoWeekChange,
-                fourWeekChange);
+                fourWeekChange,
+                twelveWeekChange
+                );
             stage2Entries.Add(entry);
         }
 
@@ -81,7 +87,7 @@ public class ReportHandler
         return report;
     }
 
-    private decimal CalculateMovingAverageWeight(IOrderedEnumerable<Stage1ReportEntry> stage1Entries, DateOnly date, int windowInDays)
+    private decimal CalculateMovingAverageWeight(IList<Stage1ReportEntry> stage1Entries, DateOnly date, int windowInDays)
     {
         var previousEntries = stage1Entries
             .Where(entry => entry.Date > date.AddDays(-windowInDays) && entry.Date <= date)
@@ -101,6 +107,4 @@ public class ReportHandler
             : 0;
         return weeksChange;
     }
-    
-    
 }
