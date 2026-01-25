@@ -1,10 +1,9 @@
 # me-tracker
 
-# 
+TODO:
 
-# TODO: 
+replace azure storage data store with sqlite
 
-Create a separate production deployment (both webui and api hosted in Azure)
-Create pipeline to regularly backup the production data
+deploy with sqlite backend
 
-Create third page showing weight loss statistics
+extend backup endpoints to include users table and put api keys in the db

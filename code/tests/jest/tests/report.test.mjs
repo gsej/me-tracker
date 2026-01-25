@@ -4,24 +4,39 @@ describe('report', () => {
   const baseUrl = 'http://localhost:5200/api';
   const validApiKey = 'apikey';
 
-  const sampleData = {
+  const sampleUsersData = {
+    users: [
+      { userId: "ApiUser", heightInCm: 150 }
+    ]
+  };
+
+  const sampleWeightsData = {
     weightRecords: [
-      { weightId: "955c82e8-124a-427b-9160-358db7e51e41", date: "2025-04-10T00:00:00Z", weight: 71.0 },
-      { weightId: "5bf0a60a-58d9-4136-8b4c-85a82e34fb02", date: "2025-04-11T00:00:00Z", weight: 70.5 },
-      { weightId: "4f7c8a9d-e5b6-42f3-a1d9-7c6b8e2f5a0c", date: "2025-04-11T00:00:00Z", weight: 71.5 }
+      { weightId: "955c82e8-124a-427b-9160-358db7e51e41", date: "2025-04-10T00:00:00Z", weight: 71.0, userId: "ApiUser", deleted: false },
+      { weightId: "5bf0a60a-58d9-4136-8b4c-85a82e34fb02", date: "2025-04-11T00:00:00Z", weight: 70.5, userId: "ApiUser", deleted: false },
+      { weightId: "4f7c8a9d-e5b6-42f3-a1d9-7c6b8e2f5a0c", date: "2025-04-11T00:00:00Z", weight: 71.5, userId: "ApiUser", deleted: false }
     ]
   };
 
   beforeAll(async () => {
-
-    // put the system in a known state before testing
-    const restoreResponse = await fetch(`${baseUrl}/backup/restore`, {
+    const restoreUsersResponse = await fetch(`${baseUrl}/backup/users/restore`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'X-API-Key': validApiKey
       },
-      body: JSON.stringify(sampleData)
+      body: JSON.stringify(sampleUsersData)
+    });
+    expect(restoreUsersResponse.status).toBe(200);
+
+    // put the system in a known state before testing
+    const restoreResponse = await fetch(`${baseUrl}/backup/weights/restore`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-API-Key': validApiKey
+      },
+      body: JSON.stringify(sampleWeightsData)
     });
     expect(restoreResponse.status).toBe(200);
   });

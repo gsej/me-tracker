@@ -17,12 +17,13 @@ public class WeightEntity : ITableEntity
     {
     }
     
-    public WeightEntity(Guid weightId, string userId, DateTime date, decimal weight)
+    public WeightEntity(Guid weightId, string userId, DateTime date, decimal weight, bool deleted)
     {
         WeightId = weightId;
         UserId = userId;
         Date = date;
         Weight = weight;
+        Deleted = deleted;
         RowKey = Guid.NewGuid().ToString();
     }
     

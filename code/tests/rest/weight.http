@@ -1,10 +1,6 @@
 
 @baseUrl = http://localhost:5200/api
 
-### Get backup data
-GET {{baseUrl}}/backup
-X-Api-Key: apikey
-
 ### create entry
 # @name createWeight
 POST {{baseUrl}}/weight
@@ -25,6 +21,13 @@ X-Api-Key: apikey
 
 GET {{locationHeader}}
 X-Api-Key: apikey
+
+### get all entries for user
+
+GET {{baseUrl}}/weights
+X-Api-Key: apikey
+
+
 
 ### delete created entry
 

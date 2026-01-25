@@ -1,10 +1,10 @@
 ### Get backup data
-GET http://localhost:5200/api/backup
+GET http://localhost:5200/api/backup/weights
 Content-Type: application/json
 X-Api-Key: apikey
 
 ### Restore data
-POST http://localhost:5200/api/backup/restore
+POST http://localhost:5200/api/backup/weights/restore
 Content-Type: application/json
 X-Api-Key: apikey
 
@@ -14,19 +14,21 @@ X-Api-Key: apikey
             "weightId": "955c82e8-124a-427b-9160-358db7e51e41",
             "userId": "ApiUser",
             "date": "2025-04-18T07:23:29.049Z",
-            "weight": 12
+            "weight": 12,
+            "deleted": true
         },
         {
             "weightId": "5bf0a60a-58d9-4136-8b4c-85a82e34fb02",
             "userId": "ApiUser",
             "date": "2025-04-18T07:24:00.591Z",
-            "weight": 43
+            "weight": 43,
+            "deleted": false
         }
     ]
 }
 
 ### Restore nothing data
-POST http://localhost:5200/api/backup/restore
+POST http://localhost:5200/api/backup/weights/restore
 Content-Type: application/json
 X-Api-Key: apikey
 
@@ -35,7 +37,7 @@ X-Api-Key: apikey
 }
 
 ### Restore big data
-POST http://localhost:5200/api/backup/restore
+POST http://localhost:5200/api/backup/weights/restore
 Content-Type: application/json
 X-Api-Key: apikey
 

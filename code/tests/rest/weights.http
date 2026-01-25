@@ -1,6 +1,0 @@
-
-@baseUrl = http://localhost:5200/api
-
-### Get all weights
-GET {{baseUrl}}/weights
-X-Api-Key: apikey

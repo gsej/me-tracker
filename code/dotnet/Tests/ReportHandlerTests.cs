@@ -26,12 +26,12 @@ public class ReportHandlerTests
         
         var weights = new List<WeightEntity>
         {
-            new (Guid.NewGuid(), "user", date1, 70),
-            new (Guid.NewGuid(), "user",date1, 80),
-            new (Guid.NewGuid(), "user",date1, 90),
-            new (Guid.NewGuid(), "user",date2, 100),
-            new (Guid.NewGuid(), "user",date2, 102),
-            new (Guid.NewGuid(), "user",date2, 101)
+            new (Guid.NewGuid(), "user", date1, 70, false),
+            new (Guid.NewGuid(), "user",date1, 80, false),
+            new (Guid.NewGuid(), "user",date1, 90, false),
+            new (Guid.NewGuid(), "user",date2, 100, false),
+            new (Guid.NewGuid(), "user",date2, 102, false),
+            new (Guid.NewGuid(), "user",date2, 101, false)
         };
 
         var report = _reportHandler.GetReport(weights, 170);
@@ -56,7 +56,8 @@ public class ReportHandlerTests
 
         var weights = new List<WeightEntity>
         {
-            new(Guid.NewGuid(), "user", firstDate, 70), new(Guid.NewGuid(), "user", lastDate, 100)
+            new(Guid.NewGuid(), "user", firstDate, 70, false), 
+            new(Guid.NewGuid(), "user", lastDate, 100, false)
         };
         
         var report = _reportHandler.GetReport(weights, 170);
@@ -73,18 +74,18 @@ public class ReportHandlerTests
 
         var weights = new List<WeightEntity>
         {
-            new(Guid.NewGuid(), "user", firstDate, 100),
-            new(Guid.NewGuid(), "user", firstDate.AddDays(1), 99),
-            new(Guid.NewGuid(), "user", firstDate.AddDays(2), 98),
-            new(Guid.NewGuid(), "user", firstDate.AddDays(3), 97),
-            new(Guid.NewGuid(), "user", firstDate.AddDays(4), 96),
-            new(Guid.NewGuid(), "user", firstDate.AddDays(5), 95),
-            new(Guid.NewGuid(), "user", firstDate.AddDays(6), 94),
-            new(Guid.NewGuid(), "user", firstDate.AddDays(7), 93),
-            new(Guid.NewGuid(), "user", firstDate.AddDays(8), 92),
-            new(Guid.NewGuid(), "user", firstDate.AddDays(9), 91),
-            new(Guid.NewGuid(), "user", firstDate.AddDays(13), 500),
-            new(Guid.NewGuid(), "user", firstDate.AddDays(17), 500),
+            new(Guid.NewGuid(), "user", firstDate, 100, false),
+            new(Guid.NewGuid(), "user", firstDate.AddDays(1), 99, false),
+            new(Guid.NewGuid(), "user", firstDate.AddDays(2), 98, false),
+            new(Guid.NewGuid(), "user", firstDate.AddDays(3), 97, false),
+            new(Guid.NewGuid(), "user", firstDate.AddDays(4), 96, false),
+            new(Guid.NewGuid(), "user", firstDate.AddDays(5), 95, false),
+            new(Guid.NewGuid(), "user", firstDate.AddDays(6), 94, false),
+            new(Guid.NewGuid(), "user", firstDate.AddDays(7), 93, false),
+            new(Guid.NewGuid(), "user", firstDate.AddDays(8), 92, false),
+            new(Guid.NewGuid(), "user", firstDate.AddDays(9), 91, false),
+            new(Guid.NewGuid(), "user", firstDate.AddDays(13), 500, false),
+            new(Guid.NewGuid(), "user", firstDate.AddDays(17), 500, false),
         };
 
         var report = _reportHandler.GetReport(weights, 170);
@@ -138,7 +139,8 @@ public class ReportHandlerTests
 
         var weights = new List<WeightEntity>
         {
-            new(Guid.NewGuid(), "user", firstDate, 70), new(Guid.NewGuid(), "user", lastDate, 100)
+            new(Guid.NewGuid(), "user", firstDate, 70, false), 
+            new(Guid.NewGuid(), "user", lastDate, 100, false)
         };
         
         var report = _reportHandler.GetReport(weights, 170);

@@ -1,0 +1,27 @@
+### Get backup data
+GET http://localhost:5200/api/backup/users
+Content-Type: application/json
+X-Api-Key: apikey
+
+### Restore data
+POST http://localhost:5200/api/backup/users/restore
+Content-Type: application/json
+X-Api-Key: apikey
+
+{
+    "userRecords": [
+        {
+            "userId": "ApiUser",
+            "heightInCm": 150
+      }      
+    ]
+}
+
+### Restore nothing data
+POST http://localhost:5200/api/backup/users/restore
+Content-Type: application/json
+X-Api-Key: apikey
+
+{
+    "userRecords": []
+}

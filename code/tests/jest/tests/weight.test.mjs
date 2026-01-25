@@ -104,8 +104,6 @@ describe('weight', () => {
     });
 
     expect(getResponse.status).toBe(404);
-  });
-
-  
+  });  
 
 });

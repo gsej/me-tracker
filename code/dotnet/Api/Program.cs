@@ -67,6 +67,20 @@ public static class Program
             return new TableServiceClient(connectionString);
         });
 
+        builder.Services.AddScoped<DataAccess.WeightRepository>(sp =>
+        {
+            var configuration = sp.GetRequiredService<IConfiguration>();
+            var connectionString = configuration["StorageAccountConnectionString"];
+            return new DataAccess.WeightRepository(connectionString);
+        });
+        
+        builder.Services.AddScoped<DataAccess.UserRepository>(sp =>
+        {
+            var configuration = sp.GetRequiredService<IConfiguration>();
+            var connectionString = configuration["StorageAccountConnectionString"];
+            return new DataAccess.UserRepository(connectionString);
+        });
+
         builder.Services.AddSingleton(new Settings());
         builder.Services.AddScoped<ReportHandler>();
         

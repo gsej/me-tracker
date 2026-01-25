@@ -6,15 +6,16 @@ describe('weights', () => {
 
   const sampleData = {
     weightRecords: [
-      { weightId: "955c82e8-124a-427b-9160-358db7e51e41", date: "2025-04-10T00:00:00Z", weight: 71.0 },
-      { weightId: "5bf0a60a-58d9-4136-8b4c-85a82e34fb02", date: "2025-04-11T00:00:00Z", weight: 70.5 }
+      { weightId: "955c82e8-124a-427b-9160-358db7e51e41", date: "2025-04-10T00:00:00Z", weight: 71.0, userId: "ApiUser", deleted: false  },
+      { weightId: "5bf0a60a-58d9-4136-8b4c-85a82e34fb02", date: "2025-04-11T00:00:00Z", weight: 70.5, userId: "ApiUser", deleted: false  },
+      { weightId: "086efd13-99a7-42b1-9394-cc03177d04fc", date: "2025-04-12T00:00:00Z", weight: 99.0, userId: "ApiUser", deleted: true }
     ]
   };
 
   beforeAll(async () => {
 
     // put the system in a known state before testing
-    const restoreResponse = await fetch(`${baseUrl}/backup/restore`, {
+    const restoreResponse = await fetch(`${baseUrl}/backup/weights/restore`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -24,7 +25,6 @@ describe('weights', () => {
     });
     expect(restoreResponse.status).toBe(200);
   });
-
 
   it('should return all weights correctly with valid API key', async () => {
 
@@ -36,12 +36,15 @@ describe('weights', () => {
     expect(backupResponse.status).toBe(200);
 
     const backupData = await backupResponse.json();
-    expect(backupData).toEqual(sampleData);
 
-  });
+    const expectedRecords = sampleData.weightRecords.filter(record => !record.deleted);
+
+    expect(backupData.weightRecords).toEqual(expectedRecords);
+
+  }); 
 
   it('should return 401 when calling backup endpoint without API key', async () => {
-    const response = await fetch(`${baseUrl}/weights`);
-    expect(response.status).toBe(401);
-  });
+     const response = await fetch(`${baseUrl}/weights`);
+     expect(response.status).toBe(401);
+   });
 });
