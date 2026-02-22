@@ -1,16 +1,34 @@
-using Azure.Data.Tables;
+using System.Globalization;
 using Api.Controllers.Models;
+using Microsoft.Data.Sqlite;
 
 namespace Api.DataAccess
 {
     public class WeightRepository
     {
-        private readonly TableClient _tableClient;
+        private readonly string _connectionString;
 
-        public WeightRepository(string storageConnectionString)
+        public WeightRepository(string connectionString)
         {
-            _tableClient = new TableClient(storageConnectionString, Constants.TableName);
-            _tableClient.CreateIfNotExists();
+            _connectionString = connectionString;
+            EnsureTablesExist();
+        }
+
+        private void EnsureTablesExist()
+        {
+            using var connection = new SqliteConnection(_connectionString);
+            connection.Open();
+            var command = connection.CreateCommand();
+            command.CommandText = """
+                CREATE TABLE IF NOT EXISTS Weights (
+                    WeightId TEXT NOT NULL PRIMARY KEY,
+                    UserId TEXT NOT NULL,
+                    Date TEXT NOT NULL,
+                    Weight TEXT NOT NULL,
+                    Deleted INTEGER NOT NULL DEFAULT 0
+                )
+                """;
+            command.ExecuteNonQuery();
         }
 
         /// <summary>
@@ -18,18 +36,17 @@ namespace Api.DataAccess
         /// </summary>
         public async Task<IEnumerable<WeightEntity>> GetAllAsync(string userId)
         {
-            
-            await _tableClient.CreateIfNotExistsAsync();
+            using var connection = new SqliteConnection(_connectionString);
+            await connection.OpenAsync();
+            var command = connection.CreateCommand();
+            command.CommandText = "SELECT WeightId, UserId, Date, Weight, Deleted FROM Weights WHERE UserId = $userId AND Deleted = 0";
+            command.Parameters.AddWithValue("$userId", userId);
 
-            var query = _tableClient.QueryAsync<WeightEntity>(e =>
-                e.PartitionKey == Constants.PartitionKey
-                && e.UserId == userId
-                && !e.Deleted);
-                                                                                                            
             var results = new List<WeightEntity>();
-            await foreach (var entity in query)
+            using var reader = await command.ExecuteReaderAsync();
+            while (await reader.ReadAsync())
             {
-                results.Add(entity);
+                results.Add(ReadWeightEntity(reader));
             }
             return results;
         }
@@ -39,55 +56,89 @@ namespace Api.DataAccess
         /// </summary>
         public async Task<IEnumerable<WeightEntity>> GetAllAsync()
         {
-            await _tableClient.CreateIfNotExistsAsync();
+            using var connection = new SqliteConnection(_connectionString);
+            await connection.OpenAsync();
+            var command = connection.CreateCommand();
+            command.CommandText = "SELECT WeightId, UserId, Date, Weight, Deleted FROM Weights";
 
-            var query = _tableClient.QueryAsync<WeightEntity>(e =>
-                e.PartitionKey == Constants.PartitionKey);
-                                                                                                            
             var results = new List<WeightEntity>();
-            await foreach (var entity in query)
+            using var reader = await command.ExecuteReaderAsync();
+            while (await reader.ReadAsync())
             {
-                results.Add(entity);
+                results.Add(ReadWeightEntity(reader));
             }
             return results;
         }
-        
+
         public async Task<WeightEntity?> GetByIdAsync(Guid weightId, string userId)
         {
-            await _tableClient.CreateIfNotExistsAsync();
-            var query = _tableClient.QueryAsync<WeightEntity>(e => 
-                e.PartitionKey == Constants.PartitionKey && 
-                e.UserId == userId && e.WeightId == weightId && !e.Deleted);
-            await foreach (var entity in query)
+            using var connection = new SqliteConnection(_connectionString);
+            await connection.OpenAsync();
+            var command = connection.CreateCommand();
+            command.CommandText = "SELECT WeightId, UserId, Date, Weight, Deleted FROM Weights WHERE WeightId = $weightId AND UserId = $userId AND Deleted = 0";
+            command.Parameters.AddWithValue("$weightId", weightId.ToString());
+            command.Parameters.AddWithValue("$userId", userId);
+
+            using var reader = await command.ExecuteReaderAsync();
+            if (await reader.ReadAsync())
             {
-                return entity;
+                return ReadWeightEntity(reader);
             }
             return null;
         }
 
         public async Task AddAsync(WeightEntity entity)
         {
-            await _tableClient.CreateIfNotExistsAsync();
-            await _tableClient.AddEntityAsync(entity);
+            using var connection = new SqliteConnection(_connectionString);
+            await connection.OpenAsync();
+            var command = connection.CreateCommand();
+            command.CommandText = "INSERT INTO Weights (WeightId, UserId, Date, Weight, Deleted) VALUES ($weightId, $userId, $date, $weight, $deleted)";
+            command.Parameters.AddWithValue("$weightId", entity.WeightId.ToString());
+            command.Parameters.AddWithValue("$userId", entity.UserId);
+            command.Parameters.AddWithValue("$date", entity.Date.ToString("O"));
+            command.Parameters.AddWithValue("$weight", entity.Weight.ToString(CultureInfo.InvariantCulture));
+            command.Parameters.AddWithValue("$deleted", entity.Deleted ? 1 : 0);
+            await command.ExecuteNonQueryAsync();
         }
 
         public async Task UpdateAsync(WeightEntity entity)
         {
-            await _tableClient.CreateIfNotExistsAsync();
-            await _tableClient.UpdateEntityAsync(entity, entity.ETag, TableUpdateMode.Replace);
+            using var connection = new SqliteConnection(_connectionString);
+            await connection.OpenAsync();
+            var command = connection.CreateCommand();
+            command.CommandText = "UPDATE Weights SET Date = $date, Weight = $weight, Deleted = $deleted WHERE WeightId = $weightId";
+            command.Parameters.AddWithValue("$date", entity.Date.ToString("O"));
+            command.Parameters.AddWithValue("$weight", entity.Weight.ToString(CultureInfo.InvariantCulture));
+            command.Parameters.AddWithValue("$deleted", entity.Deleted ? 1 : 0);
+            command.Parameters.AddWithValue("$weightId", entity.WeightId.ToString());
+            await command.ExecuteNonQueryAsync();
         }
 
         public async Task HardDeleteAsync(WeightEntity entity)
         {
-            await _tableClient.CreateIfNotExistsAsync();
-            await _tableClient.DeleteEntityAsync(entity);
+            using var connection = new SqliteConnection(_connectionString);
+            await connection.OpenAsync();
+            var command = connection.CreateCommand();
+            command.CommandText = "DELETE FROM Weights WHERE WeightId = $weightId";
+            command.Parameters.AddWithValue("$weightId", entity.WeightId.ToString());
+            await command.ExecuteNonQueryAsync();
         }
-        
+
         public async Task DeleteAsync(WeightEntity entity)
         {
-            await _tableClient.CreateIfNotExistsAsync();
             entity.Deleted = true;
             await UpdateAsync(entity);
+        }
+
+        private static WeightEntity ReadWeightEntity(SqliteDataReader reader)
+        {
+            return new WeightEntity(
+                Guid.Parse(reader.GetString(0)),
+                reader.GetString(1),
+                DateTime.Parse(reader.GetString(2)),
+                decimal.Parse(reader.GetString(3), CultureInfo.InvariantCulture),
+                reader.GetInt32(4) != 0
+            );
         }
     }
 }

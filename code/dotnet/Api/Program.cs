@@ -1,7 +1,6 @@
 using Api.Controllers;
 using Api.Controllers.Report;
 using Api.Filters;
-using Azure.Data.Tables;
 using Microsoft.OpenApi.Models;
 
 namespace Api;
@@ -60,25 +59,18 @@ public static class Program
             });
         });
         
-        builder.Services.AddSingleton(sp =>
-        {
-            var configuration = sp.GetRequiredService<IConfiguration>();
-            var connectionString = configuration["StorageAccountConnectionString"];
-            return new TableServiceClient(connectionString);
-        });
-
         builder.Services.AddScoped<DataAccess.WeightRepository>(sp =>
         {
             var configuration = sp.GetRequiredService<IConfiguration>();
-            var connectionString = configuration["StorageAccountConnectionString"];
-            return new DataAccess.WeightRepository(connectionString);
+            var connectionString = configuration["SqliteConnectionString"];
+            return new DataAccess.WeightRepository(connectionString!);
         });
-        
+
         builder.Services.AddScoped<DataAccess.UserRepository>(sp =>
         {
             var configuration = sp.GetRequiredService<IConfiguration>();
-            var connectionString = configuration["StorageAccountConnectionString"];
-            return new DataAccess.UserRepository(connectionString);
+            var connectionString = configuration["SqliteConnectionString"];
+            return new DataAccess.UserRepository(connectionString!);
         });
 
         builder.Services.AddSingleton(new Settings());

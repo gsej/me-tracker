@@ -1,22 +1,13 @@
 using System.Globalization;
-using System.Runtime.Serialization;
-using Azure;
-using Azure.Data.Tables;
 
 namespace Api.Controllers.Models;
 
-public static class Constants
-{
-    public const string TableName = "Weights";
-    public const string PartitionKey = "WeightEntries";
-}
-
-public class WeightEntity : ITableEntity
+public class WeightEntity
 {
     public WeightEntity()
     {
     }
-    
+
     public WeightEntity(Guid weightId, string userId, DateTime date, decimal weight, bool deleted)
     {
         WeightId = weightId;
@@ -24,30 +15,15 @@ public class WeightEntity : ITableEntity
         Date = date;
         Weight = weight;
         Deleted = deleted;
-        RowKey = Guid.NewGuid().ToString();
     }
-    
+
     public Guid WeightId { get; init; }
-    
-    public string UserId { get; init; }
-    
+
+    public string UserId { get; init; } = null!;
+
     public DateTime Date { get; init; }
 
     public bool Deleted { get; set; } = false;
 
-    [IgnoreDataMember] 
     public decimal Weight { get; set; }
-
-    [DataMember(Name = "Weight")]
-    public string WeightString
-    {
-        get => Weight.ToString(CultureInfo.InvariantCulture);
-        set => Weight = decimal.Parse(value, CultureInfo.InvariantCulture);
-    }
-
-    public string PartitionKey { get; set; } = Constants.PartitionKey;
-    public string RowKey { get; set; } = null!;
-
-    public ETag ETag { get; set; } = ETag.All;
-    public DateTimeOffset? Timestamp { get; set; }
 }

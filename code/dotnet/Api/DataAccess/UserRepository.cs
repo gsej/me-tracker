@@ -1,16 +1,30 @@
-using Azure.Data.Tables;
 using Api.Controllers.Models;
+using Microsoft.Data.Sqlite;
 
 namespace Api.DataAccess
 {
     public class UserRepository
     {
-        private readonly TableClient _tableClient;
+        private readonly string _connectionString;
 
-        public UserRepository(string storageConnectionString)
+        public UserRepository(string connectionString)
         {
-            _tableClient = new TableClient(storageConnectionString, UserEntity.Constants.TableName);
-            _tableClient.CreateIfNotExists();
+            _connectionString = connectionString;
+            EnsureTablesExist();
+        }
+
+        private void EnsureTablesExist()
+        {
+            using var connection = new SqliteConnection(_connectionString);
+            connection.Open();
+            var command = connection.CreateCommand();
+            command.CommandText = """
+                CREATE TABLE IF NOT EXISTS Users (
+                    UserId TEXT NOT NULL PRIMARY KEY,
+                    HeightInCm INTEGER NOT NULL
+                )
+                """;
+            command.ExecuteNonQuery();
         }
 
         /// <summary>
@@ -18,43 +32,55 @@ namespace Api.DataAccess
         /// </summary>
         public async Task<IEnumerable<UserEntity>> GetAllAsync()
         {
-            await _tableClient.CreateIfNotExistsAsync();
+            using var connection = new SqliteConnection(_connectionString);
+            await connection.OpenAsync();
+            var command = connection.CreateCommand();
+            command.CommandText = "SELECT UserId, HeightInCm FROM Users";
 
-            var query = _tableClient.QueryAsync<UserEntity>(e =>
-                e.PartitionKey == UserEntity.Constants.PartitionKey);
-                                                                                                            
             var results = new List<UserEntity>();
-            await foreach (var entity in query)
+            using var reader = await command.ExecuteReaderAsync();
+            while (await reader.ReadAsync())
             {
-                results.Add(entity);
+                results.Add(new UserEntity(reader.GetString(0), reader.GetInt32(1)));
             }
             return results;
         }
-        
-        public async Task<UserEntity> GetByIdAsync(string userId)
+
+        public async Task<UserEntity?> GetByIdAsync(string userId)
         {
-            await _tableClient.CreateIfNotExistsAsync();
-            var query = _tableClient.QueryAsync<UserEntity>(e =>
-                e.PartitionKey == UserEntity.Constants.PartitionKey &&
-                e.UserId == userId);
-            
-            await foreach (var entity in query)
+            using var connection = new SqliteConnection(_connectionString);
+            await connection.OpenAsync();
+            var command = connection.CreateCommand();
+            command.CommandText = "SELECT UserId, HeightInCm FROM Users WHERE UserId = $userId";
+            command.Parameters.AddWithValue("$userId", userId);
+
+            using var reader = await command.ExecuteReaderAsync();
+            if (await reader.ReadAsync())
             {
-                return entity;
+                return new UserEntity(reader.GetString(0), reader.GetInt32(1));
             }
             return null;
         }
 
         public async Task AddAsync(UserEntity entity)
         {
-            await _tableClient.CreateIfNotExistsAsync();
-            await _tableClient.AddEntityAsync(entity);
+            using var connection = new SqliteConnection(_connectionString);
+            await connection.OpenAsync();
+            var command = connection.CreateCommand();
+            command.CommandText = "INSERT INTO Users (UserId, HeightInCm) VALUES ($userId, $heightInCm)";
+            command.Parameters.AddWithValue("$userId", entity.UserId);
+            command.Parameters.AddWithValue("$heightInCm", entity.HeightInCm);
+            await command.ExecuteNonQueryAsync();
         }
 
         public async Task HardDeleteAsync(UserEntity entity)
         {
-            await _tableClient.CreateIfNotExistsAsync();
-            await _tableClient.DeleteEntityAsync(entity);
+            using var connection = new SqliteConnection(_connectionString);
+            await connection.OpenAsync();
+            var command = connection.CreateCommand();
+            command.CommandText = "DELETE FROM Users WHERE UserId = $userId";
+            command.Parameters.AddWithValue("$userId", entity.UserId);
+            await command.ExecuteNonQueryAsync();
         }
     }
 }

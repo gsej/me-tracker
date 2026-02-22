@@ -1,7 +1,6 @@
 using Api.Controllers.Models;
 using Api.DataAccess;
 using Api.Filters;
-using Azure.Data.Tables;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Api.Controllers.Report;
