@@ -10,7 +10,8 @@ jobs:
     env:
       WORKING_DIR: code/angular
       BUILD_OUTPUT_DIR: dist/me-tracker/browser
-      API_URL: https://api-prod-me-tracker.azurewebsites.net
+      #API_URL: https://api-prod-me-tracker.azurewebsites.net
+      API_URL: https://frigate.tailbdb963.ts.net
     
     steps: 
       - name: checkout repo
