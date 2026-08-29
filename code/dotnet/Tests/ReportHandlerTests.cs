@@ -132,6 +132,34 @@ public class ReportHandlerTests
     }
     
     [Fact]
+    public void HandleShouldNotThrowWhenDataHasGapWiderThanTheMovingAverageWindows()
+    {
+        // A gap longer than the 2-week window means some days have no records within any
+        // trailing window. The report should still be produced for every day in the range
+        // rather than throwing on an empty average.
+        var firstDate = new DateTime(2023, 10, 1);
+        var lastDate = firstDate.AddDays(30);
+
+        var weights = new List<WeightEntity>
+        {
+            new(Guid.NewGuid(), "user", firstDate, 100, false),
+            new(Guid.NewGuid(), "user", lastDate, 90, false)
+        };
+
+        var report = _reportHandler.GetReport(weights, 170);
+
+        using var _ = new AssertionScope();
+
+        report.Entries.Count.Should().Be(31);
+
+        // Deep inside the gap there are no records in any window, so the average carries
+        // forward the last known value.
+        var midGapEntry = report.Entries.Single(e => e.Date == DateOnly.FromDateTime(firstDate.AddDays(20)));
+        midGapEntry.RecordedWeight.Should().BeNull();
+        midGapEntry.AverageWeight.Should().Be(100);
+    }
+
+    [Fact]
     public void HandleShouldReturnCalculateBmi()
     {
         var firstDate = new DateTime(2023, 10, 1);

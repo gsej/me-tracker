@@ -58,13 +58,13 @@ public class ReportHandler
 
             var oneWeekChange = CalculateLastNWeekChange(stage2Entries, date, movingAverageWeight, 1);
 
-            var twoWeekAverage = CalculateMovingAverageWeight(stage1Entries, date, 14);
+            var twoWeekAverage = CalculateMovingAverageWeight(stage1Entries, date, 14, movingAverageWeight);
             var twoWeekChange = CalculateLastNWeekChange(stage2Entries, date, twoWeekAverage, 2);
-            
-            var fourWeekAverage = CalculateMovingAverageWeight(stage1Entries, date, 28);
+
+            var fourWeekAverage = CalculateMovingAverageWeight(stage1Entries, date, 28, movingAverageWeight);
             var fourWeekChange = CalculateLastNWeekChange(stage2Entries, date, fourWeekAverage, 4);
-            
-            var twelveWeekAverage = CalculateMovingAverageWeight(stage1Entries, date, 84);
+
+            var twelveWeekAverage = CalculateMovingAverageWeight(stage1Entries, date, 84, movingAverageWeight);
             var twelveWeekChange = CalculateLastNWeekChange(stage2Entries, date, twelveWeekAverage, 12);
 
             var entry = new Stage2ReportEntry(date, 
@@ -87,7 +87,7 @@ public class ReportHandler
         return report;
     }
 
-    private decimal CalculateMovingAverageWeight(IList<Stage1ReportEntry> stage1Entries, DateOnly date, int windowInDays)
+    private decimal CalculateMovingAverageWeight(IList<Stage1ReportEntry> stage1Entries, DateOnly date, int windowInDays, decimal fallbackWeight)
     {
         var previousEntries = stage1Entries
             .Where(entry => entry.Date > date.AddDays(-windowInDays) && entry.Date <= date)
@@ -95,7 +95,12 @@ public class ReportHandler
             .Select(entry => entry.Weight)
             .ToList();
 
-        return previousEntries.Average();
+        // A gap wider than the window leaves no records to average. This window always
+        // contains the 7-day window, so the day's (carried-forward) moving average is the
+        // best available estimate and keeps the report from throwing on sparse data.
+        return previousEntries.Count == 0
+            ? fallbackWeight
+            : previousEntries.Average();
     }
 
     private decimal CalculateLastNWeekChange(List<Stage2ReportEntry> stage2Entries, DateOnly date, decimal movingAverageWeight, int weeks)
