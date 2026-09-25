@@ -1,4 +1,4 @@
-<div class="h-screen w-full sm:max-w-screen-sm mx-auto flex flex-col overflow-hidden inset-0" (touchstart)="onTouchStart($event)" (touchmove)="onTouchMove($event)">
+<div class="fixed inset-0 w-full sm:max-w-screen-sm mx-auto flex flex-col overflow-hidden" (touchstart)="onTouchStart($event)" (touchmove)="onTouchMove($event)">
 
   <header class="w-full h-14 pt-2 flex-shrink-0 md:block md:landscape:block sm:landscape:hidden">
     <div class="flex justify-between items-center h-full px-4">
@@ -37,7 +37,7 @@
     </div>
   </main>
 
-  <footer class="w-full h-10 py-1 flex-shrink-0 md:landscape:block sm:landscape:hidden">
+  <footer class="w-full h-10 flex-shrink-0 md:landscape:block sm:landscape:hidden">
     <div class="flex justify-end h-full items-center px-4">
       <app-pi [text]="gitHash" [swaggerUrl]="swaggerUrl" class="w-full"></app-pi>
     </div>
