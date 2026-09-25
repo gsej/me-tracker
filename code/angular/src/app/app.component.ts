@@ -37,12 +37,15 @@ export class AppComponent implements AfterViewInit {
 
   @ViewChild('pagesContainer') pagesContainer!: ElementRef;
 
+  public swaggerUrl: string = '';
+
   constructor(
     settingsService: SettingsService,
     private router: Router,
     private route: ActivatedRoute
   ) {
     this.gitHash = settingsService.settings.gitHash;
+    this.swaggerUrl = settingsService.settings.apiUrl + '/swagger/index.html';
   }
 
   ngAfterViewInit() {
