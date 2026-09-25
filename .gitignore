@@ -9,11 +9,3 @@ nohup.out
 *.csv
 *.csv#
 
-# Terraform
-*.tfvars
-*.tfvars.json
-.terraform/
-.terraform.lock.hcl
-terraform.tfstate
-terraform.tfstate.*
-apikeys
