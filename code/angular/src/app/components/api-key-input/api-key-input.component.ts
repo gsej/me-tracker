@@ -1,12 +1,12 @@
 import { Component, OnInit, HostListener } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { FormsModule } from '@angular/forms';
 
 @Component({
-    selector: 'app-api-key-input',
-    imports: [CommonModule, FormsModule],
-    templateUrl: './api-key-input.component.html',
-    styleUrl: './api-key-input.component.scss'
+  selector: 'app-api-key-input',
+  imports: [FormsModule],
+  templateUrl: './api-key-input.component.html',
+  styleUrl: './api-key-input.component.scss',
 })
 export class ApiKeyInputComponent implements OnInit {
   apiKey: string = '';
@@ -17,7 +17,7 @@ export class ApiKeyInputComponent implements OnInit {
   onDocumentClick(event: MouseEvent) {
     const target = event.target as HTMLElement;
     const apiKeyInput = document.querySelector('app-api-key-input');
-    
+
     // Only hide if clicking outside the component
     if (apiKeyInput && !apiKeyInput.contains(target)) {
       this.isVisible = false;

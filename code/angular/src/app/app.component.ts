@@ -1,7 +1,13 @@
-import { Component, ViewChild, ElementRef, AfterViewInit, HostListener } from '@angular/core';
+import {
+  Component,
+  ViewChild,
+  ElementRef,
+  AfterViewInit,
+  HostListener,
+} from '@angular/core';
 import { RouterOutlet, Router, ActivatedRoute } from '@angular/router';
 import { ReactiveFormsModule } from '@angular/forms';
-import { CommonModule } from '@angular/common';
+
 import { SettingsService } from './settings/settings.service';
 import { HealthService } from './services/health.service';
 import { PiComponent } from './components/pi/pi.component';
@@ -11,18 +17,17 @@ import { Page2Component } from './components/page-2/page-2.component';
 import { Page3Component } from './components/page-3/page-3.component';
 
 @Component({
-    selector: 'app-root',
-    imports: [
-        ReactiveFormsModule,
-        CommonModule,
-        Page1Component,
-        Page2Component,
-        Page3Component,
-        PiComponent,
-        ApiKeyInputComponent
-    ],
-    templateUrl: './app.component.html',
-    styleUrl: './app.component.scss'
+  selector: 'app-root',
+  imports: [
+    ReactiveFormsModule,
+    Page1Component,
+    Page2Component,
+    Page3Component,
+    PiComponent,
+    ApiKeyInputComponent,
+  ],
+  templateUrl: './app.component.html',
+  styleUrl: './app.component.scss',
 })
 export class AppComponent implements AfterViewInit {
   title = 'me-tracker';
@@ -49,19 +54,19 @@ export class AppComponent implements AfterViewInit {
     settingsService: SettingsService,
     healthService: HealthService,
     private router: Router,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
   ) {
     this.gitHash = settingsService.settings.gitHash;
     this.swaggerUrl = settingsService.settings.apiUrl + '/swagger/index.html';
 
     healthService.getApiGitHash().subscribe({
-      next: (hash) => this.apiGitHash = hash,
-      error: () => this.apiGitHash = 'unknown'
+      next: (hash) => (this.apiGitHash = hash),
+      error: () => (this.apiGitHash = 'unknown'),
     });
   }
 
   ngAfterViewInit() {
-    this.route.queryParams.subscribe(params => {
+    this.route.queryParams.subscribe((params) => {
       const page = params['page'];
       if (page !== undefined) {
         const pageIndex = this.pageNames.indexOf(page);
@@ -112,7 +117,7 @@ export class AppComponent implements AfterViewInit {
       this.router.navigate([], {
         relativeTo: this.route,
         queryParams: { page: this.pageNames[pageIndex] },
-        queryParamsHandling: 'merge'
+        queryParamsHandling: 'merge',
       });
       this.updatePagePosition();
     }
