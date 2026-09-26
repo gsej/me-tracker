@@ -1,5 +1,5 @@
 using Api.Filters;
-using FluentAssertions;
+using AwesomeAssertions;
 
 namespace Tests;
 

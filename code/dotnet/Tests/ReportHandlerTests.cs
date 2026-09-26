@@ -1,8 +1,8 @@
 using Api;
 using Api.Controllers.Models;
 using Api.Controllers.Report;
-using FluentAssertions;
-using FluentAssertions.Execution;
+using AwesomeAssertions;
+using AwesomeAssertions.Execution;
 
 namespace Tests;
 
@@ -90,7 +90,7 @@ public class ReportHandlerTests
 
         var report = _reportHandler.GetReport(weights, 170);
         
-        using var _ = new FluentAssertions.Execution.AssertionScope();
+        using var _ = new AwesomeAssertions.Execution.AssertionScope();
         
         report.Entries.Count.Should().Be(18);
         
