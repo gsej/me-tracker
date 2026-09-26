@@ -3,6 +3,7 @@ import { RouterOutlet, Router, ActivatedRoute } from '@angular/router';
 import { ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { SettingsService } from './settings/settings.service';
+import { HealthService } from './services/health.service';
 import { PiComponent } from './components/pi/pi.component';
 import { ApiKeyInputComponent } from './components/api-key-input/api-key-input.component';
 import { Page1Component } from './components/page-1/page-1.component';
@@ -26,6 +27,11 @@ import { Page3Component } from './components/page-3/page-3.component';
 export class AppComponent implements AfterViewInit {
   title = 'me-tracker';
   public gitHash: string = 'not set';
+  public apiGitHash: string = '…';
+
+  get hashText(): string {
+    return `ui: ${this.gitHash}, api: ${this.apiGitHash}`;
+  }
 
   currentPage: number = 0;
   totalPages: number = 3;
@@ -41,11 +47,17 @@ export class AppComponent implements AfterViewInit {
 
   constructor(
     settingsService: SettingsService,
+    healthService: HealthService,
     private router: Router,
     private route: ActivatedRoute
   ) {
     this.gitHash = settingsService.settings.gitHash;
     this.swaggerUrl = settingsService.settings.apiUrl + '/swagger/index.html';
+
+    healthService.getApiGitHash().subscribe({
+      next: (hash) => this.apiGitHash = hash,
+      error: () => this.apiGitHash = 'unknown'
+    });
   }
 
   ngAfterViewInit() {

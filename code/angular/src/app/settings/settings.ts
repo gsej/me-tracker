@@ -1,4 +1,4 @@
 export class Settings {
-  gitHash = "githash-placeholder";
+  gitHash = "unknown";
   apiUrl = ""
 }
