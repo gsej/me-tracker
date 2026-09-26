@@ -7,7 +7,7 @@ Update angular version (currently 18, latest is 22 - upgrade one major at a time
 - Optional migrations from 20 upgrade (done):
   - ng update @angular/core --name control-flow-migration (@if/@for block syntax)
   - ng update @angular/core --name router-current-navigation (no changes needed)
-- Angular 20 -> 21
+- Angular 20 -> 21 (done; no source migrations needed)
 - Angular 21 -> 22
 
 Review test coverage
