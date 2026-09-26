@@ -5,7 +5,7 @@ using Microsoft.OpenApi;
 
 namespace Api;
 
-public static class Program
+public class Program
 {
     public static void Main(params string[] args)
     {
