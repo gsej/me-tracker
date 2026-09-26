@@ -1,13 +1,9 @@
-Update angular version (currently 18, latest is 22 - upgrade one major at a time)
-- Angular 18 -> 19 (done)
-- Optional migrations from 19 upgrade (done):
-  - ng update @angular/cli --name use-application-builder (new esbuild application build system)
-  - ng update @angular/core --name provide-initializer (APP_INITIALIZER -> provideAppInitializer)
-- Angular 19 -> 20 (done)
-- Optional migrations from 20 upgrade (done):
-  - ng update @angular/core --name control-flow-migration (@if/@for block syntax)
-  - ng update @angular/core --name router-current-navigation (no changes needed)
-- Angular 20 -> 21 (done; no source migrations needed)
-- Angular 21 -> 22
-
 Review test coverage
+
+  are there any glaring holes in the test coverage for the c# app? 
+  anything that needs covering and would be useful to build on or adapt when making an app with the same framework but different purpose?
+
+Final overall code review
+
+  are there any obvious issues in the c# app that could be addressed? 
+  are there any obvious issues in the angular app that could be addressed? 
