@@ -1,13 +1,22 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  OnDestroy,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Subscription } from 'rxjs';
-import { WeightReport, WeightReportService } from '../../services/weight-report.service';
+import {
+  WeightReport,
+  WeightReportService,
+} from '../../services/weight-report.service';
 
 @Component({
-    selector: 'app-weight-report',
-    imports: [CommonModule],
-    templateUrl: './weight-report.component.html',
-    styleUrls: ['./weight-report.component.scss']
+  selector: 'app-weight-report',
+  imports: [CommonModule],
+  templateUrl: './weight-report.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
+  styleUrls: ['./weight-report.component.scss'],
 })
 export class WeightReportComponent implements OnInit, OnDestroy {
   weightReport: WeightReport | null = null;
@@ -16,32 +25,32 @@ export class WeightReportComponent implements OnInit, OnDestroy {
 
   private subscriptions: Subscription[] = [];
 
-  constructor(private weightReportService: WeightReportService) { }
+  constructor(private weightReportService: WeightReportService) {}
 
   ngOnInit(): void {
     this.subscriptions.push(
-      this.weightReportService.weightReport$.subscribe(report => {
+      this.weightReportService.weightReport$.subscribe((report) => {
         this.weightReport = report;
-      })
+      }),
     );
 
     this.subscriptions.push(
-      this.weightReportService.isLoading$.subscribe(loading => {
+      this.weightReportService.isLoading$.subscribe((loading) => {
         this.isLoading = loading;
-      })
+      }),
     );
 
     this.subscriptions.push(
-      this.weightReportService.error$.subscribe(error => {
+      this.weightReportService.error$.subscribe((error) => {
         this.error = error;
-      })
+      }),
     );
 
     this.loadWeightRecords();
   }
 
   ngOnDestroy(): void {
-    this.subscriptions.forEach(sub => sub.unsubscribe());
+    this.subscriptions.forEach((sub) => sub.unsubscribe());
   }
 
   loadWeightRecords(): void {

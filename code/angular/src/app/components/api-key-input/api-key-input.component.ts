@@ -1,4 +1,9 @@
-import { Component, OnInit, HostListener } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  HostListener,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 
 import { FormsModule } from '@angular/forms';
 
@@ -6,6 +11,7 @@ import { FormsModule } from '@angular/forms';
   selector: 'app-api-key-input',
   imports: [FormsModule],
   templateUrl: './api-key-input.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './api-key-input.component.scss',
 })
 export class ApiKeyInputComponent implements OnInit {

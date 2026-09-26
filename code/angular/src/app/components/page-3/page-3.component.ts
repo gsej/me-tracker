@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 
 import { WeightReportComponent } from '../weight-report/weight-report.component';
 
@@ -6,6 +6,7 @@ import { WeightReportComponent } from '../weight-report/weight-report.component'
   selector: 'app-page-3',
   imports: [WeightReportComponent],
   templateUrl: './page-3.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./page-3.component.scss'],
 })
 export class Page3Component {

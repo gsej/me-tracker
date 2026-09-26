@@ -1,13 +1,19 @@
-import { Component } from '@angular/core';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
+import {
+  FormBuilder,
+  FormGroup,
+  Validators,
+  ReactiveFormsModule,
+} from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { WeightService } from '../../services/weight.service';
 
 @Component({
-    selector: 'app-weight-input',
-    templateUrl: './weight-input.component.html',
-    styleUrls: ['./weight-input.component.scss'],
-    imports: [CommonModule, ReactiveFormsModule]
+  selector: 'app-weight-input',
+  templateUrl: './weight-input.component.html',
+  styleUrls: ['./weight-input.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
+  imports: [CommonModule, ReactiveFormsModule],
 })
 export class WeightInputComponent {
   weightForm: FormGroup;
@@ -17,10 +23,10 @@ export class WeightInputComponent {
 
   constructor(
     private fb: FormBuilder,
-    private weightService: WeightService
+    private weightService: WeightService,
   ) {
     this.weightForm = this.fb.group({
-      weight: ['', [Validators.required, Validators.min(0)]]
+      weight: ['', [Validators.required, Validators.min(0)]],
     });
   }
 
@@ -37,21 +43,20 @@ export class WeightInputComponent {
     if (this.weightForm.valid) {
       const weight = this.weightForm.value.weight;
 
-      this.weightService.addWeightRecord(weight)
-        .subscribe({
-          next: () => {
-            this.status = 'Success';
-            this.errorStatusCode = null;
-            this.weightForm.reset();
-            this.clearStatusAfterDelay();
-          },
-          error: (error) => {
-            console.error('Error submitting weight:', error);
-            this.status = 'Error';
-            this.errorStatusCode = error.status || 'Unknown';
-            this.clearStatusAfterDelay();
-          }
-        });
+      this.weightService.addWeightRecord(weight).subscribe({
+        next: () => {
+          this.status = 'Success';
+          this.errorStatusCode = null;
+          this.weightForm.reset();
+          this.clearStatusAfterDelay();
+        },
+        error: (error) => {
+          console.error('Error submitting weight:', error);
+          this.status = 'Error';
+          this.errorStatusCode = error.status || 'Unknown';
+          this.clearStatusAfterDelay();
+        },
+      });
     }
   }
 }

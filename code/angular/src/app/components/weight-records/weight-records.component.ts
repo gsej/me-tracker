@@ -1,13 +1,19 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  OnDestroy,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { WeightService, WeightRecord } from '../../services/weight.service';
 import { Subscription } from 'rxjs';
 
 @Component({
-    selector: 'app-weight-records',
-    imports: [CommonModule],
-    templateUrl: './weight-records.component.html',
-    styleUrls: ['./weight-records.component.scss']
+  selector: 'app-weight-records',
+  imports: [CommonModule],
+  templateUrl: './weight-records.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
+  styleUrls: ['./weight-records.component.scss'],
 })
 export class WeightRecordsComponent implements OnInit, OnDestroy {
   weightRecords: WeightRecord[] = [];
@@ -16,26 +22,26 @@ export class WeightRecordsComponent implements OnInit, OnDestroy {
 
   private subscriptions: Subscription[] = [];
 
-  constructor(private weightService: WeightService) { }
+  constructor(private weightService: WeightService) {}
 
   ngOnInit(): void {
     // Subscribe to the service observables
     this.subscriptions.push(
-      this.weightService.weightRecords$.subscribe(records => {
+      this.weightService.weightRecords$.subscribe((records) => {
         this.weightRecords = records;
-      })
+      }),
     );
 
     this.subscriptions.push(
-      this.weightService.isLoading$.subscribe(loading => {
+      this.weightService.isLoading$.subscribe((loading) => {
         this.isLoading = loading;
-      })
+      }),
     );
 
     this.subscriptions.push(
-      this.weightService.error$.subscribe(error => {
+      this.weightService.error$.subscribe((error) => {
         this.error = error;
-      })
+      }),
     );
 
     // Load the weight records
@@ -44,7 +50,7 @@ export class WeightRecordsComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     // Clean up subscriptions to prevent memory leaks
-    this.subscriptions.forEach(sub => sub.unsubscribe());
+    this.subscriptions.forEach((sub) => sub.unsubscribe());
   }
 
   loadWeightRecords(): void {
@@ -61,7 +67,7 @@ export class WeightRecordsComponent implements OnInit, OnDestroy {
         error: (error) => {
           console.error('Error deleting weight record:', error);
           // Error will be handled by the service subscription
-        }
+        },
       });
     }
   }

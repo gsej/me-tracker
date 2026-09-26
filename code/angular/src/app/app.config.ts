@@ -8,7 +8,7 @@ import {
 import { provideRouter } from '@angular/router';
 
 import { routes } from './app.routes';
-import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClient, withXhr } from '@angular/common/http';
 import { SettingsHttpService } from './settings/settings.http.service';
 import { provideServiceWorker } from '@angular/service-worker';
 
@@ -20,7 +20,7 @@ export const appConfig: ApplicationConfig = {
   providers: [
     provideZoneChangeDetection({ eventCoalescing: true }),
     provideRouter(routes),
-    provideHttpClient(),
+    provideHttpClient(withXhr()),
     provideAppInitializer(() => {
       const initializerFn = initializeApp(inject(SettingsHttpService));
       return initializerFn();

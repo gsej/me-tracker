@@ -4,6 +4,7 @@ import {
   ElementRef,
   AfterViewInit,
   HostListener,
+  ChangeDetectionStrategy,
 } from '@angular/core';
 import { RouterOutlet, Router, ActivatedRoute } from '@angular/router';
 import { ReactiveFormsModule } from '@angular/forms';
@@ -27,6 +28,7 @@ import { Page3Component } from './components/page-3/page-3.component';
     ApiKeyInputComponent,
   ],
   templateUrl: './app.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './app.component.scss',
 })
 export class AppComponent implements AfterViewInit {
