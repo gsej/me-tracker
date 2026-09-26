@@ -8,6 +8,7 @@ public class HealthController : ControllerBase
     [HttpGet("/api/healthz")]
     public IActionResult GetHealthz()
     {
-        return Ok("Healthy");
+        var gitHash = Environment.GetEnvironmentVariable("GIT_HASH") ?? "unknown";
+        return Ok(new { status = "Healthy", gitHash });
     }
 }

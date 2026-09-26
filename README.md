@@ -38,9 +38,27 @@ The backend is deployed manually on the home server:
 
 ```bash
 git pull
-docker compose up -d --build
+./start.sh
 ```
 
+Two helper scripts wrap the process so the git hash injection and `--build` flag can't be forgotten:
+
+- **`start.sh`** — builds the image (injecting the current git short hash) and starts the container. Use this for a cold start. Equivalent to `GIT_HASH=$(git rev-parse --short HEAD) docker compose up -d --build`.
+- **`restart.sh`** — stops and removes the running container, then rebuilds and starts it again via `start.sh`. Use this to bounce a container that's already running.
+
 `docker-compose.yml` builds the image from `code/dotnet/Api/Dockerfile` and starts the container on port 5200, with the database volume and secrets mounted from `../me-tracker-private/`.
+
+The `--build` flag is required to pick up new code — a plain `docker compose up` reuses the existing image and keeps serving the old build. The `GIT_HASH` build argument bakes the current short commit hash into the image (via an `ENV` in the Dockerfile).
+
+#### Verifying the running build
+
+The API's health endpoint returns the git hash of the code it was built from:
+
+```bash
+curl https://frigate.tailbdb963.ts.net/api/healthz
+# {"status":"Healthy","gitHash":"abc1234"}
+```
+
+Compare this against `git rev-parse --short HEAD` to confirm a new image was built and is now serving.
 
 The API is exposed publicly via **Tailscale Funnel**, which provides an HTTPS endpoint accessible from the internet without opening firewall ports.

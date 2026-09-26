@@ -3,6 +3,8 @@ services:
     build:
       context: ./code/dotnet/Api
       dockerfile: Dockerfile
+      args:
+        GIT_HASH: ${GIT_HASH:-unknown}
     ports:
       - "5200:8080"
     env_file:
