@@ -135,7 +135,7 @@ namespace Api.DataAccess
             return new WeightEntity(
                 Guid.Parse(reader.GetString(0)),
                 reader.GetString(1),
-                DateTime.Parse(reader.GetString(2)),
+                DateTime.Parse(reader.GetString(2), CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind),
                 decimal.Parse(reader.GetString(3), CultureInfo.InvariantCulture),
                 reader.GetInt32(4) != 0
             );
