@@ -7,7 +7,7 @@ A personal tracking app with an Angular frontend and a .NET backend API.
 | Component | Technology | Location |
 |-----------|-----------|----------|
 | Frontend | Angular (PWA) | `code/angular/` |
-| Backend API | .NET 8 (ASP.NET Core) | `code/dotnet/Api/` |
+| Backend API | .NET 10 (ASP.NET Core) | `code/dotnet/Api/` |
 | Database | SQLite | mounted from `../me-tracker-private/database/` |
 
 The frontend is a static Angular app hosted on GitHub Pages. It communicates with the backend API over HTTPS via a Tailscale Funnel URL (`frigate.tailbdb963.ts.net`), which publicly exposes the API running on the home server.
@@ -21,7 +21,7 @@ The backend runs in a Docker container on a home server. It reads and writes a S
 The frontend is deployed manually via a GitHub Actions workflow (`.github/workflows/webui-prod.yml`), triggered using **workflow_dispatch** (run it by hand from the GitHub Actions UI).
 
 The workflow:
-1. Checks out the repo and installs Node 20 dependencies.
+1. Checks out the repo and installs Node 22 dependencies.
 2. Builds the Angular app with `npm run build -- --base-href /me-tracker/`.
 3. Populates `settings.json` from `settings.template.json` using `envsubst`, injecting the API URL and current git hash.
 4. Deploys the built static files to **GitHub Pages**.
