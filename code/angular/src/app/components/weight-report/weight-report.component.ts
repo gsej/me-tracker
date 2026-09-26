@@ -4,11 +4,10 @@ import { Subscription } from 'rxjs';
 import { WeightReport, WeightReportService } from '../../services/weight-report.service';
 
 @Component({
-  selector: 'app-weight-report',
-  standalone: true,
-  imports: [CommonModule],
-  templateUrl: './weight-report.component.html',
-  styleUrls: ['./weight-report.component.scss']
+    selector: 'app-weight-report',
+    imports: [CommonModule],
+    templateUrl: './weight-report.component.html',
+    styleUrls: ['./weight-report.component.scss']
 })
 export class WeightReportComponent implements OnInit, OnDestroy {
   weightReport: WeightReport | null = null;

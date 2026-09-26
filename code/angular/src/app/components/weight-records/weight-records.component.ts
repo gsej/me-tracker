@@ -4,11 +4,10 @@ import { WeightService, WeightRecord } from '../../services/weight.service';
 import { Subscription } from 'rxjs';
 
 @Component({
-  selector: 'app-weight-records',
-  standalone: true,
-  imports: [CommonModule],
-  templateUrl: './weight-records.component.html',
-  styleUrls: ['./weight-records.component.scss']
+    selector: 'app-weight-records',
+    imports: [CommonModule],
+    templateUrl: './weight-records.component.html',
+    styleUrls: ['./weight-records.component.scss']
 })
 export class WeightRecordsComponent implements OnInit, OnDestroy {
   weightRecords: WeightRecord[] = [];

@@ -3,11 +3,10 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
 @Component({
-  selector: 'app-api-key-input',
-  standalone: true,
-  imports: [CommonModule, FormsModule],
-  templateUrl: './api-key-input.component.html',
-  styleUrl: './api-key-input.component.scss'
+    selector: 'app-api-key-input',
+    imports: [CommonModule, FormsModule],
+    templateUrl: './api-key-input.component.html',
+    styleUrl: './api-key-input.component.scss'
 })
 export class ApiKeyInputComponent implements OnInit {
   apiKey: string = '';

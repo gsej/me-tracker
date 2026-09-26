@@ -2,10 +2,9 @@ import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 
 @Component({
-  selector: 'app-pi',
-  standalone: true,
-  imports: [CommonModule],
-  template: `
+    selector: 'app-pi',
+    imports: [CommonModule],
+    template: `
     <div class="flex items-center justify-between h-10 select-none w-full">
       <a *ngIf="isTextVisible && swaggerUrl" [href]="swaggerUrl" target="_blank" rel="noopener" class="text-sm">swagger</a>
       <div class="flex items-center cursor-pointer ml-auto" (click)="toggleText()">
@@ -14,7 +13,7 @@ import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
       </div>
     </div>
   `,
-  changeDetection: ChangeDetectionStrategy.OnPush
+    changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class PiComponent {
   @Input() text = "";

@@ -11,18 +11,18 @@ import { Page2Component } from './components/page-2/page-2.component';
 import { Page3Component } from './components/page-3/page-3.component';
 
 @Component({
-  selector: 'app-root',
-  standalone: true,
-  imports: [
-    ReactiveFormsModule,
-    CommonModule,
-    Page1Component,
-    Page2Component,
-    Page3Component,
-    PiComponent,
-    ApiKeyInputComponent],
-  templateUrl: './app.component.html',
-  styleUrl: './app.component.scss'
+    selector: 'app-root',
+    imports: [
+        ReactiveFormsModule,
+        CommonModule,
+        Page1Component,
+        Page2Component,
+        Page3Component,
+        PiComponent,
+        ApiKeyInputComponent
+    ],
+    templateUrl: './app.component.html',
+    styleUrl: './app.component.scss'
 })
 export class AppComponent implements AfterViewInit {
   title = 'me-tracker';

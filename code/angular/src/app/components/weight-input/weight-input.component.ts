@@ -4,11 +4,10 @@ import { CommonModule } from '@angular/common';
 import { WeightService } from '../../services/weight.service';
 
 @Component({
-  selector: 'app-weight-input',
-  templateUrl: './weight-input.component.html',
-  styleUrls: ['./weight-input.component.scss'],
-  standalone: true,
-  imports: [CommonModule, ReactiveFormsModule]
+    selector: 'app-weight-input',
+    templateUrl: './weight-input.component.html',
+    styleUrls: ['./weight-input.component.scss'],
+    imports: [CommonModule, ReactiveFormsModule]
 })
 export class WeightInputComponent {
   weightForm: FormGroup;

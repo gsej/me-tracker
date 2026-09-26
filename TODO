@@ -1,0 +1,10 @@
+Update angular version (currently 18, latest is 22 - upgrade one major at a time)
+- Angular 18 -> 19 (done)
+- Optional migrations from 19 upgrade (done):
+  - ng update @angular/cli --name use-application-builder (new esbuild application build system)
+  - ng update @angular/core --name provide-initializer (APP_INITIALIZER -> provideAppInitializer)
+- Angular 19 -> 20
+- Angular 20 -> 21
+- Angular 21 -> 22
+
+Review test coverage
