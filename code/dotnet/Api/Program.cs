@@ -1,7 +1,7 @@
 using Api.Controllers;
 using Api.Controllers.Report;
 using Api.Filters;
-using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi;
 
 namespace Api;
 
@@ -43,18 +43,11 @@ public static class Program
                 Description = "API Key Authentication"
             });
 
-            s.AddSecurityRequirement(new OpenApiSecurityRequirement
+            s.AddSecurityRequirement(doc => new OpenApiSecurityRequirement
             {
                 {
-                    new OpenApiSecurityScheme
-                    {
-                        Reference = new OpenApiReference
-                        {
-                            Type = ReferenceType.SecurityScheme,
-                            Id = "ApiKey"
-                        }
-                    },
-                    Array.Empty<string>()
+                    new OpenApiSecuritySchemeReference("ApiKey", doc),
+                    new List<string>()
                 }
             });
         });

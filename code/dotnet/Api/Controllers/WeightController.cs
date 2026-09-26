@@ -1,8 +1,8 @@
+using System.Text.Json.Nodes;
 using Api.Controllers.Models;
 using Api.Filters;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.OpenApi.Any;
-using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi;
 using Swashbuckle.AspNetCore.SwaggerGen;
 
 namespace Api.Controllers;
@@ -79,14 +79,14 @@ public class WeightController : ControllerBase
 
     public class WeightRecordExample : ISchemaFilter
     {
-        public void Apply(OpenApiSchema schema, SchemaFilterContext context)
+        public void Apply(IOpenApiSchema schema, SchemaFilterContext context)
         {
-            if (context.Type == typeof(WeightRecord))
-                schema.Example = new OpenApiObject
+            if (context.Type == typeof(WeightRecord) && schema is OpenApiSchema concreteSchema)
+                concreteSchema.Example = new JsonObject
                 {
-                    ["date"] = new OpenApiDate(new DateTime(2025, 1, 1, 0, 0, 0, DateTimeKind.Utc)), 
-                    ["weight"] = new OpenApiDouble(75.5),
-                    ["userId"] = new OpenApiString("ApiUser"),
+                    ["date"] = "2025-01-01T00:00:00Z",
+                    ["weight"] = 75.5,
+                    ["userId"] = "ApiUser",
                 };
         }
     }
