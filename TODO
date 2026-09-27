@@ -1,9 +1,3 @@
-Review test coverage
-
-  are there any glaring holes in the test coverage for the c# app? 
-  anything that needs covering and would be useful to build on or adapt when making an app with the same framework but different purpose?
-
-
 Final overall code review
 
   are there any obvious issues in the c# app that could be addressed?

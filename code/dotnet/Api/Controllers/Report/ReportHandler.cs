@@ -22,7 +22,15 @@ public class ReportHandler
             .OrderBy(record => record.Date)
             .ToList();
 
-        // stage two. 
+        // No records means no date range to walk — return an empty report rather than
+        // throwing on Min()/Max() of an empty sequence (e.g. a new user opening the
+        // report before logging any weight).
+        if (stage1Entries.Count == 0)
+        {
+            return new WeightReport();
+        }
+
+        // stage two.
         var firstDate = stage1Entries.Min(entry => entry.Date);
         var lastDate = stage1Entries.Max(entry => entry.Date);
 

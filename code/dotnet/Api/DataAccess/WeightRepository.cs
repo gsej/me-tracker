@@ -95,7 +95,7 @@ namespace Api.DataAccess
             command.CommandText = "INSERT INTO Weights (WeightId, UserId, Date, Weight, Deleted) VALUES ($weightId, $userId, $date, $weight, $deleted)";
             command.Parameters.AddWithValue("$weightId", entity.WeightId.ToString());
             command.Parameters.AddWithValue("$userId", entity.UserId);
-            command.Parameters.AddWithValue("$date", entity.Date.ToString("O"));
+            command.Parameters.AddWithValue("$date", ToUtc(entity.Date).ToString("O"));
             command.Parameters.AddWithValue("$weight", entity.Weight.ToString(CultureInfo.InvariantCulture));
             command.Parameters.AddWithValue("$deleted", entity.Deleted ? 1 : 0);
             await command.ExecuteNonQueryAsync();
@@ -107,7 +107,7 @@ namespace Api.DataAccess
             await connection.OpenAsync();
             var command = connection.CreateCommand();
             command.CommandText = "UPDATE Weights SET Date = $date, Weight = $weight, Deleted = $deleted WHERE WeightId = $weightId";
-            command.Parameters.AddWithValue("$date", entity.Date.ToString("O"));
+            command.Parameters.AddWithValue("$date", ToUtc(entity.Date).ToString("O"));
             command.Parameters.AddWithValue("$weight", entity.Weight.ToString(CultureInfo.InvariantCulture));
             command.Parameters.AddWithValue("$deleted", entity.Deleted ? 1 : 0);
             command.Parameters.AddWithValue("$weightId", entity.WeightId.ToString());
@@ -135,10 +135,22 @@ namespace Api.DataAccess
             return new WeightEntity(
                 Guid.Parse(reader.GetString(0)),
                 reader.GetString(1),
-                DateTime.Parse(reader.GetString(2), CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind),
+                ToUtc(DateTime.Parse(reader.GetString(2), CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind)),
                 decimal.Parse(reader.GetString(3), CultureInfo.InvariantCulture),
                 reader.GetInt32(4) != 0
             );
         }
+
+        /// <summary>
+        /// Normalises a date to UTC so weights are stored and returned as UTC regardless of the
+        /// server's timezone. A Local value is converted; an Unspecified value is assumed to
+        /// already be UTC (relabelled without shifting the clock).
+        /// </summary>
+        private static DateTime ToUtc(DateTime date) => date.Kind switch
+        {
+            DateTimeKind.Utc => date,
+            DateTimeKind.Local => date.ToUniversalTime(),
+            _ => DateTime.SpecifyKind(date, DateTimeKind.Utc)
+        };
     }
 }

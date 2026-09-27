@@ -42,6 +42,51 @@ public class WeightRepositoryTests : IDisposable
     }
 
     [Fact]
+    public async Task GetAllAsync_NoArgs_ReturnsAllUsersRecordsIncludingDeleted()
+    {
+        // The parameterless overload backs the backup endpoint, which must read everything:
+        // all users, including soft-deleted rows.
+        await _repository.AddAsync(new WeightEntity(Guid.NewGuid(), "alice", new DateTime(2025, 1, 1), 80m, false));
+        await _repository.AddAsync(new WeightEntity(Guid.NewGuid(), "alice", new DateTime(2025, 1, 2), 81m, true));
+        await _repository.AddAsync(new WeightEntity(Guid.NewGuid(), "bob", new DateTime(2025, 1, 3), 90m, false));
+
+        var all = (await _repository.GetAllAsync()).ToList();
+
+        all.Should().HaveCount(3);
+        all.Select(r => r.UserId).Should().Contain(new[] { "alice", "bob" });
+        all.Should().Contain(r => r.Deleted);
+    }
+
+    [Fact]
+    public async Task AddThenGetById_NormalisesUnspecifiedDateToUtc()
+    {
+        // An Unspecified-kind date is stored and returned as UTC with its clock value intact,
+        // enforcing the "dates as UTC regardless of server timezone" invariant.
+        var id = Guid.NewGuid();
+        var unspecified = new DateTime(2025, 1, 15, 6, 30, 0, DateTimeKind.Unspecified);
+        await _repository.AddAsync(new WeightEntity(id, "alice", unspecified, 82.5m, false));
+
+        var loaded = await _repository.GetByIdAsync(id, "alice");
+
+        loaded!.Date.Kind.Should().Be(DateTimeKind.Utc);
+        loaded.Date.Should().Be(new DateTime(2025, 1, 15, 6, 30, 0, DateTimeKind.Utc));
+    }
+
+    [Fact]
+    public async Task AddThenGetById_ConvertsLocalDateToUtc()
+    {
+        // A Local-kind date is converted (not just relabelled) to the equivalent UTC instant.
+        var id = Guid.NewGuid();
+        var local = new DateTime(2025, 1, 15, 6, 30, 0, DateTimeKind.Local);
+        await _repository.AddAsync(new WeightEntity(id, "alice", local, 82.5m, false));
+
+        var loaded = await _repository.GetByIdAsync(id, "alice");
+
+        loaded!.Date.Kind.Should().Be(DateTimeKind.Utc);
+        loaded.Date.Should().Be(local.ToUniversalTime());
+    }
+
+    [Fact]
     public async Task GetByIdAsync_DoesNotReturnAnotherUsersRecord()
     {
         var id = Guid.NewGuid();

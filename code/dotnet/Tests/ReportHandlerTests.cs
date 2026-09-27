@@ -160,6 +160,16 @@ public class ReportHandlerTests
     }
 
     [Fact]
+    public void HandleShouldReturnEmptyReportWhenThereAreNoWeights()
+    {
+        // A user with no recorded weights (e.g. one who just opened the report) has no date
+        // range to walk, so the report is empty rather than throwing.
+        var report = _reportHandler.GetReport(new List<WeightEntity>(), 170);
+
+        report.Entries.Should().BeEmpty();
+    }
+
+    [Fact]
     public void HandleShouldReturnCalculateBmi()
     {
         var firstDate = new DateTime(2023, 10, 1);

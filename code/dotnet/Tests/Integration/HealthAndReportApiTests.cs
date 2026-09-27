@@ -53,6 +53,19 @@ public class HealthAndReportApiTests : IDisposable
     }
 
     [Fact]
+    public async Task Report_ForUserWithNoWeights_ReturnsEmptyReport()
+    {
+        var client = _factory.CreateClientWithKey(ApiTestFactory.AliceKey);
+
+        // No weights posted — the report must not 500 on an empty date range.
+        var response = await client.GetAsync("/api/report");
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var report = await response.Content.ReadFromJsonAsync<WeightReport>();
+        report!.Entries.Should().BeEmpty();
+    }
+
+    [Fact]
     public async Task Report_ForUserWithoutRestoredProfile_SucceedsUsingSeededHeight()
     {
         var client = _factory.CreateClientWithKey(ApiTestFactory.AliceKey);
