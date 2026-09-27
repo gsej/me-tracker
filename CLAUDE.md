@@ -34,7 +34,7 @@ template-ness.
 Backend (from `code/dotnet/`):
 ```bash
 dotnet build
-dotnet test                     # xUnit; 23 tests
+dotnet test                     # xUnit; 37 tests
 dotnet run --project Api        # local API on http://localhost:5200
 ```
 
@@ -71,7 +71,7 @@ of `apikey` (user `ApiUser`). The Angular app reads `apiUrl` at runtime from
 - **Per-user isolation** is a real invariant — repositories filter by `userId`;
   one user must never read another's data. Keep it covered by tests.
 - **Weights are soft-deleted** (a `Deleted` flag); normal reads exclude them, the
-  backup endpoints read everything.
+  backup endpoint reads everything.
 - **Dates are stored/returned as UTC** regardless of server timezone (there's a
   regression test guarding this) — preserve that when touching the data layer.
 - SQLite persistence stores dates as ISO `"O"` and decimals with `InvariantCulture`.

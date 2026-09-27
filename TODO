@@ -1,9 +1,0 @@
-Final overall code review
-
-  are there any obvious issues in the c# app that could be addressed?
-  are there any obvious issues in the angular app that could be addressed?
-
-
-Future work
-
-Replace the multiple backup and restore endpoints with one backup and one restore which return structured json objects containing both users and weights
