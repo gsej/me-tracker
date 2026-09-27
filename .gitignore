@@ -9,3 +9,8 @@ nohup.out
 *.csv
 *.csv#
 
+# Local SQLite runtime files (e.g. code/dotnet/Api/me-tracker.db)
+*.db
+*.db-wal
+*.db-shm
+
