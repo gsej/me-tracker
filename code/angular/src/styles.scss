@@ -1,15 +1,5 @@
 /* You can add global styles to this file, and also import other style files */
-
-@import '@fontsource/ibm-plex-mono';
-@import '@fontsource/ibm-plex-mono/200.css';
-@import '@fontsource/ibm-plex-mono/300.css';
-@import '@fontsource/ibm-plex-mono/400.css';
-@import '@fontsource/ibm-plex-mono/500.css';
-@import '@fontsource/ibm-plex-mono/600.css';
-@import '@fontsource/ibm-plex-mono/700.css';
-@import '@fontsource/ibm-plex-mono/400-italic.css';
-
-
+/* IBM Plex Mono font CSS is included via angular.json's "styles" array. */
 
 @tailwind base;
 @tailwind components;
@@ -17,6 +7,11 @@
 
 
 @layer base {
+  body {
+    // IBM Plex Mono (loaded via angular.json) as the app-wide default font.
+    @apply font-mono;
+  }
+
   :root {
     //--background: 51 53.8% 97.5%;
     --background: 51 53.8% 97.5%;
