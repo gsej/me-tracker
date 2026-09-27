@@ -8,8 +8,9 @@ import {
 import { provideRouter } from '@angular/router';
 
 import { routes } from './app.routes';
-import { provideHttpClient, withXhr } from '@angular/common/http';
+import { provideHttpClient, withXhr, withInterceptors } from '@angular/common/http';
 import { SettingsHttpService } from './settings/settings.http.service';
+import { apiKeyInterceptor } from './services/api-key.interceptor';
 import { provideServiceWorker } from '@angular/service-worker';
 
 export function initializeApp(settingsHttpService: SettingsHttpService) {
@@ -20,7 +21,7 @@ export const appConfig: ApplicationConfig = {
   providers: [
     provideZoneChangeDetection({ eventCoalescing: true }),
     provideRouter(routes),
-    provideHttpClient(withXhr()),
+    provideHttpClient(withXhr(), withInterceptors([apiKeyInterceptor])),
     provideAppInitializer(() => {
       const initializerFn = initializeApp(inject(SettingsHttpService));
       return initializerFn();

@@ -1,3 +1,7 @@
+@let error = error$ | async;
+@let isLoading = isLoading$ | async;
+@let weightReport = weightReport$ | async;
+
 @if (error) {
   <div
     class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4"
@@ -13,13 +17,13 @@
 }
 
 @if (!isLoading && !error) {
-  @if (weightReport === null || weightReport.entries.length === 0) {
+  @if (weightReport === null || weightReport === undefined || weightReport.entries.length === 0) {
     <div class="text-center py-4">
       <p class="text-gray-500">No weight report found.</p>
     </div>
   }
 
-  @if (weightReport !== null && weightReport.entries.length > 0) {
+  @if (weightReport && weightReport.entries.length > 0) {
     <table class="min-w-full">
       <thead class="bg-gray-50 border-b sticky top-0 z-10">
         <tr>

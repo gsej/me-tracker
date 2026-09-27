@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
 import { SettingsService } from '../settings/settings.service';
@@ -37,17 +37,11 @@ export class WeightService {
     this.apiUrl = this.settingsService.settings.apiUrl;
   }
 
-  private getHeaders(): HttpHeaders {
-    return new HttpHeaders({
-      'x-api-key': localStorage.getItem('api_key') || ''
-    });
-  }
-
   loadWeightRecords(): void {
     this.isLoadingSubject.next(true);
     this.errorSubject.next(null);
 
-    this.http.get<WeightsCollection>(`${this.apiUrl}/api/weights`, { headers: this.getHeaders() })
+    this.http.get<WeightsCollection>(`${this.apiUrl}/api/weights`)
       .subscribe({
         next: (data) => {
 
@@ -77,7 +71,7 @@ export class WeightService {
       date: new Date()
     };
 
-    return this.http.post(`${this.apiUrl}/api/weight`, payload, { headers: this.getHeaders() })
+    return this.http.post(`${this.apiUrl}/api/weight`, payload)
       .pipe(
         tap(() => {
           // After successfully adding a new record, refresh the list
@@ -87,7 +81,7 @@ export class WeightService {
   }
 
   deleteWeightRecord(weightId: string): Observable<any> {
-    return this.http.delete(`${this.apiUrl}/api/weight/${weightId}`, { headers: this.getHeaders() })
+    return this.http.delete(`${this.apiUrl}/api/weight/${weightId}`)
       .pipe(
         tap(() => {
           // After successfully deleting a record, refresh the list

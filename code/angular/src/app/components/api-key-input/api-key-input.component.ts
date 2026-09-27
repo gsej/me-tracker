@@ -3,9 +3,11 @@ import {
   OnInit,
   HostListener,
   ChangeDetectionStrategy,
+  inject,
 } from '@angular/core';
 
 import { FormsModule } from '@angular/forms';
+import { ApiKeyService } from '../../services/api-key.service';
 
 @Component({
   selector: 'app-api-key-input',
@@ -15,9 +17,10 @@ import { FormsModule } from '@angular/forms';
   styleUrl: './api-key-input.component.scss',
 })
 export class ApiKeyInputComponent implements OnInit {
+  private readonly apiKeyService = inject(ApiKeyService);
+
   apiKey: string = '';
   isVisible: boolean = false;
-  private readonly STORAGE_KEY = 'api_key';
 
   @HostListener('document:click', ['$event'])
   onDocumentClick(event: MouseEvent) {
@@ -31,7 +34,7 @@ export class ApiKeyInputComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.loadApiKey();
+    this.apiKey = this.apiKeyService.get() ?? '';
   }
 
   toggleVisibility() {
@@ -39,13 +42,6 @@ export class ApiKeyInputComponent implements OnInit {
   }
 
   saveApiKey() {
-    localStorage.setItem(this.STORAGE_KEY, this.apiKey);
-  }
-
-  private loadApiKey() {
-    const storedKey = localStorage.getItem(this.STORAGE_KEY);
-    if (storedKey) {
-      this.apiKey = storedKey;
-    }
+    this.apiKeyService.set(this.apiKey);
   }
 }

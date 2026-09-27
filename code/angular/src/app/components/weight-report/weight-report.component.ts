@@ -1,15 +1,6 @@
-import {
-  Component,
-  OnInit,
-  OnDestroy,
-  ChangeDetectionStrategy,
-} from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Subscription } from 'rxjs';
-import {
-  WeightReport,
-  WeightReportService,
-} from '../../services/weight-report.service';
+import { WeightReportService } from '../../services/weight-report.service';
 
 @Component({
   selector: 'app-weight-report',
@@ -18,46 +9,22 @@ import {
   changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./weight-report.component.scss'],
 })
-export class WeightReportComponent implements OnInit, OnDestroy {
-  weightReport: WeightReport | null = null;
-  isLoading: boolean = false;
-  error: string | null = null;
+export class WeightReportComponent implements OnInit {
+  private readonly weightReportService = inject(WeightReportService);
 
-  private subscriptions: Subscription[] = [];
-
-  constructor(private weightReportService: WeightReportService) {}
+  readonly weightReport$ = this.weightReportService.weightReport$;
+  readonly isLoading$ = this.weightReportService.isLoading$;
+  readonly error$ = this.weightReportService.error$;
 
   ngOnInit(): void {
-    this.subscriptions.push(
-      this.weightReportService.weightReport$.subscribe((report) => {
-        this.weightReport = report;
-      }),
-    );
-
-    this.subscriptions.push(
-      this.weightReportService.isLoading$.subscribe((loading) => {
-        this.isLoading = loading;
-      }),
-    );
-
-    this.subscriptions.push(
-      this.weightReportService.error$.subscribe((error) => {
-        this.error = error;
-      }),
-    );
-
-    this.loadWeightRecords();
+    this.loadWeightReport();
   }
 
-  ngOnDestroy(): void {
-    this.subscriptions.forEach((sub) => sub.unsubscribe());
-  }
-
-  loadWeightRecords(): void {
+  loadWeightReport(): void {
     this.weightReportService.loadWeightReport();
   }
 
   onRetry(): void {
-    this.loadWeightRecords();
+    this.loadWeightReport();
   }
 }

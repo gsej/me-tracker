@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject } from 'rxjs';
 import { SettingsService } from '../settings/settings.service';
 
@@ -41,17 +41,11 @@ export class WeightReportService {
     this.apiUrl = this.settingsService.settings.apiUrl;
   }
 
-  private getHeaders(): HttpHeaders {
-    return new HttpHeaders({
-      'x-api-key': localStorage.getItem('api_key') || ''
-    });
-  }
-
   loadWeightReport(): void {
     this.isLoadingSubject.next(true);
     this.errorSubject.next(null);
 
-    this.http.get<WeightReport>(`${this.apiUrl}/api/report`, { headers: this.getHeaders() })
+    this.http.get<WeightReport>(`${this.apiUrl}/api/report`)
       .subscribe({
         next: (data) => {
 

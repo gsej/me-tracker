@@ -1,12 +1,6 @@
-import {
-  Component,
-  OnInit,
-  OnDestroy,
-  ChangeDetectionStrategy,
-} from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { WeightService, WeightRecord } from '../../services/weight.service';
-import { Subscription } from 'rxjs';
+import { WeightService } from '../../services/weight.service';
 
 @Component({
   selector: 'app-weight-records',
@@ -15,42 +9,15 @@ import { Subscription } from 'rxjs';
   changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./weight-records.component.scss'],
 })
-export class WeightRecordsComponent implements OnInit, OnDestroy {
-  weightRecords: WeightRecord[] = [];
-  isLoading: boolean = false;
-  error: string | null = null;
+export class WeightRecordsComponent implements OnInit {
+  private readonly weightService = inject(WeightService);
 
-  private subscriptions: Subscription[] = [];
-
-  constructor(private weightService: WeightService) {}
+  readonly weightRecords$ = this.weightService.weightRecords$;
+  readonly isLoading$ = this.weightService.isLoading$;
+  readonly error$ = this.weightService.error$;
 
   ngOnInit(): void {
-    // Subscribe to the service observables
-    this.subscriptions.push(
-      this.weightService.weightRecords$.subscribe((records) => {
-        this.weightRecords = records;
-      }),
-    );
-
-    this.subscriptions.push(
-      this.weightService.isLoading$.subscribe((loading) => {
-        this.isLoading = loading;
-      }),
-    );
-
-    this.subscriptions.push(
-      this.weightService.error$.subscribe((error) => {
-        this.error = error;
-      }),
-    );
-
-    // Load the weight records
     this.loadWeightRecords();
-  }
-
-  ngOnDestroy(): void {
-    // Clean up subscriptions to prevent memory leaks
-    this.subscriptions.forEach((sub) => sub.unsubscribe());
   }
 
   loadWeightRecords(): void {
