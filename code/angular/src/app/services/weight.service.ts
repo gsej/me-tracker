@@ -65,13 +65,13 @@ export class WeightService {
       });
   }
 
-  addWeightRecord(weight: number): Observable<any> {
+  addWeightRecord(weight: number): Observable<void> {
     const payload = {
       weight: weight,
       date: new Date()
     };
 
-    return this.http.post(`${this.apiUrl}/api/weight`, payload)
+    return this.http.post<void>(`${this.apiUrl}/api/weight`, payload)
       .pipe(
         tap(() => {
           // After successfully adding a new record, refresh the list
@@ -80,8 +80,8 @@ export class WeightService {
       );
   }
 
-  deleteWeightRecord(weightId: string): Observable<any> {
-    return this.http.delete(`${this.apiUrl}/api/weight/${weightId}`)
+  deleteWeightRecord(weightId: string): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/api/weight/${weightId}`)
       .pipe(
         tap(() => {
           // After successfully deleting a record, refresh the list

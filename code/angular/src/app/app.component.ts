@@ -6,7 +6,7 @@ import {
   HostListener,
   ChangeDetectionStrategy,
 } from '@angular/core';
-import { RouterOutlet, Router, ActivatedRoute } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { ReactiveFormsModule } from '@angular/forms';
 
 import { SettingsService } from './settings/settings.service';
