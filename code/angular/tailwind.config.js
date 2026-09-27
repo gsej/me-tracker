@@ -1,7 +1,5 @@
 /** @type {import('tailwindcss').Config} */
 
-const { fontFamily } = require('tailwindcss/defaultTheme')
-
 module.exports = {
   content: [
     "./src/index.html","./src/**/*.{html,ts}",
@@ -15,9 +13,6 @@ module.exports = {
       // },
     },
     extend: {
-      fontFamily: {
-        mono: ['IBM Plex Mono', ...fontFamily.mono],
-      },
       colors: {
         border: 'hsl(var(--border))',
         input: 'hsl(var(--input))',

@@ -52,16 +52,6 @@ export class AppComponent implements AfterViewInit {
 
   public swaggerUrl: string = '';
 
-  // Temporary font-evaluation toggle: flips the app between IBM Plex Mono and the default
-  // sans font. Persisted so the choice survives PWA restarts. Remove once a font is chosen.
-  private static readonly FONT_STORAGE_KEY = 'use_mono_font';
-  useMonoFont: boolean = localStorage.getItem(AppComponent.FONT_STORAGE_KEY) !== 'false';
-
-  toggleFont(): void {
-    this.useMonoFont = !this.useMonoFont;
-    localStorage.setItem(AppComponent.FONT_STORAGE_KEY, String(this.useMonoFont));
-  }
-
   constructor(
     settingsService: SettingsService,
     healthService: HealthService,
