@@ -29,8 +29,8 @@ public class HealthAndReportApiTests : IDisposable
         var client = _factory.CreateClientWithKey(ApiTestFactory.AliceKey);
 
         // The report looks up the user's height, so the user row must exist.
-        await client.PostAsJsonAsync("/api/backup/users/restore",
-            new UsersCollection(new[] { new User(ApiTestFactory.AliceUserId, 180) }));
+        await client.PostAsJsonAsync("/api/backup/restore",
+            new Backup(new[] { new User(ApiTestFactory.AliceUserId, 180) }, Array.Empty<WeightRecord>()));
         await client.PostAsJsonAsync("/api/weight",
             new CreateWeightRecordRequest(new DateTime(2025, 1, 15), 90m));
 
@@ -46,9 +46,9 @@ public class HealthAndReportApiTests : IDisposable
         var client = _factory.CreateClientWithKey(ApiTestFactory.AliceKey);
 
         // The auth filter runs before the action, so this single authenticated request
-        // both seeds alice's profile row and returns it.
-        var users = await client.GetFromJsonAsync<UsersCollection>("/api/backup/users");
-        var alice = users!.Users.Should().ContainSingle(u => u.UserId == ApiTestFactory.AliceUserId).Subject;
+        // both seeds alice's profile row and returns it (via the backup snapshot).
+        var backup = await client.GetFromJsonAsync<Backup>("/api/backup");
+        var alice = backup!.Users!.Should().ContainSingle(u => u.UserId == ApiTestFactory.AliceUserId).Subject;
         alice.heightInCm.Should().Be(ApiKeyAuthFilter.SeededHeightInCm);
     }
 
@@ -70,7 +70,7 @@ public class HealthAndReportApiTests : IDisposable
     {
         var client = _factory.CreateClientWithKey(ApiTestFactory.AliceKey);
 
-        // No backup/users restore — the profile row only exists because auth seeded it.
+        // No restore performed — the profile row only exists because auth seeded it.
         await client.PostAsJsonAsync("/api/weight",
             new CreateWeightRecordRequest(new DateTime(2025, 1, 15), 90m));
 

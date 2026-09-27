@@ -5,6 +5,9 @@ describe('weights', () => {
   const validApiKey = 'apikey';
 
   const sampleData = {
+    users: [
+      { userId: "ApiUser", heightInCm: 150 }
+    ],
     weightRecords: [
       { weightId: "955c82e8-124a-427b-9160-358db7e51e41", date: "2025-04-10T00:00:00Z", weight: 71.0, userId: "ApiUser", deleted: false  },
       { weightId: "5bf0a60a-58d9-4136-8b4c-85a82e34fb02", date: "2025-04-11T00:00:00Z", weight: 70.5, userId: "ApiUser", deleted: false  },
@@ -15,7 +18,7 @@ describe('weights', () => {
   beforeAll(async () => {
 
     // put the system in a known state before testing
-    const restoreResponse = await fetch(`${baseUrl}/backup/weights/restore`, {
+    const restoreResponse = await fetch(`${baseUrl}/backup/restore`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

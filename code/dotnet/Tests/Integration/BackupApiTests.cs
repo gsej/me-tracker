@@ -16,33 +16,75 @@ public class BackupApiTests : IDisposable
     {
         var client = _factory.CreateClientWithKey(ApiTestFactory.AliceKey);
 
-        var response = await client.PostAsJsonAsync<WeightsCollection?>("/api/backup/weights/restore", null);
+        var response = await client.PostAsJsonAsync<Backup?>("/api/backup/restore", null);
 
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 
     [Fact]
-    public async Task Restore_ReplacesAllExistingRecords()
+    public async Task Restore_WithMissingSection_ReturnsBadRequest()
     {
         var client = _factory.CreateClientWithKey(ApiTestFactory.AliceKey);
 
-        var original = new WeightsCollection(new[]
-        {
-            new WeightRecord(Guid.NewGuid(), ApiTestFactory.AliceUserId, new DateTime(2025, 1, 1), 80m, false),
-            new WeightRecord(Guid.NewGuid(), ApiTestFactory.AliceUserId, new DateTime(2025, 1, 2), 81m, false),
-        });
-        await client.PostAsJsonAsync("/api/backup/weights/restore", original);
+        // Weights present but users omitted: a restore must carry both sections.
+        var response = await client.PostAsJsonAsync("/api/backup/restore",
+            new Backup(null, new[]
+            {
+                new WeightRecord(Guid.NewGuid(), ApiTestFactory.AliceUserId, new DateTime(2025, 1, 1), 80m, false),
+            }));
 
-        var replacement = new WeightsCollection(new[]
-        {
-            new WeightRecord(Guid.NewGuid(), ApiTestFactory.AliceUserId, new DateTime(2025, 2, 1), 79m, false),
-        });
-        await client.PostAsJsonAsync("/api/backup/weights/restore", replacement);
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
 
-        var collection = await client.GetFromJsonAsync<WeightsCollection>("/api/backup/weights");
+    [Fact]
+    public async Task Restore_ReplacesAllUsersAndWeights()
+    {
+        var client = _factory.CreateClientWithKey(ApiTestFactory.AliceKey);
 
-        var records = collection!.WeightRecords!.ToList();
+        var original = new Backup(
+            new[] { new User(ApiTestFactory.AliceUserId, 180) },
+            new[]
+            {
+                new WeightRecord(Guid.NewGuid(), ApiTestFactory.AliceUserId, new DateTime(2025, 1, 1), 80m, false),
+                new WeightRecord(Guid.NewGuid(), ApiTestFactory.AliceUserId, new DateTime(2025, 1, 2), 81m, false),
+            });
+        await client.PostAsJsonAsync("/api/backup/restore", original);
+
+        var replacement = new Backup(
+            new[] { new User(ApiTestFactory.AliceUserId, 175) },
+            new[]
+            {
+                new WeightRecord(Guid.NewGuid(), ApiTestFactory.AliceUserId, new DateTime(2025, 2, 1), 79m, false),
+            });
+        await client.PostAsJsonAsync("/api/backup/restore", replacement);
+
+        var backup = await client.GetFromJsonAsync<Backup>("/api/backup");
+
+        var users = backup!.Users!.ToList();
+        users.Should().ContainSingle();
+        users[0].heightInCm.Should().Be(175);
+
+        var records = backup.WeightRecords!.ToList();
         records.Should().ContainSingle();
         records[0].Weight.Should().Be(79m);
+    }
+
+    [Fact]
+    public async Task Backup_IncludesSoftDeletedWeights()
+    {
+        var client = _factory.CreateClientWithKey(ApiTestFactory.AliceKey);
+
+        await client.PostAsJsonAsync("/api/backup/restore", new Backup(
+            new[] { new User(ApiTestFactory.AliceUserId, 180) },
+            new[]
+            {
+                new WeightRecord(Guid.NewGuid(), ApiTestFactory.AliceUserId, new DateTime(2025, 1, 1), 80m, false),
+                new WeightRecord(Guid.NewGuid(), ApiTestFactory.AliceUserId, new DateTime(2025, 1, 2), 81m, true),
+            }));
+
+        var backup = await client.GetFromJsonAsync<Backup>("/api/backup");
+
+        backup!.WeightRecords!.Should().HaveCount(2);
+        backup.WeightRecords!.Should().Contain(r => r.Deleted);
     }
 }
