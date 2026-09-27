@@ -1,5 +1,7 @@
 <div
   class="fixed inset-0 w-full sm:max-w-screen-sm mx-auto flex flex-col overflow-hidden"
+  [class.font-mono]="useMonoFont"
+  [class.font-sans]="!useMonoFont"
   (touchstart)="onTouchStart($event)"
   (touchmove)="onTouchMove($event)"
 >
@@ -8,6 +10,15 @@
   >
     <div class="flex justify-between items-center h-full px-4">
       <app-api-key-input></app-api-key-input>
+      <!-- Temporary font-evaluation toggle; remove once a font is chosen. -->
+      <button
+        type="button"
+        (click)="toggleFont()"
+        class="flex-shrink-0 text-xs border border-gray-300 rounded px-2 py-1"
+        title="Toggle font (IBM Plex Mono / default sans)"
+      >
+        Using: {{ useMonoFont ? 'IBM' : 'Sans' }}
+      </button>
       <a
         href="https://github.com/gsej/me-tracker"
         aria-label="Github"
