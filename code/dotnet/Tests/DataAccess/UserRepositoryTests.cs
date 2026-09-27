@@ -39,4 +39,25 @@ public class UserRepositoryTests : IDisposable
 
         loaded.Should().BeNull();
     }
+
+    [Fact]
+    public async Task EnsureExistsAsync_ForUnknownUser_CreatesRowWithGivenHeight()
+    {
+        await _repository.EnsureExistsAsync("alice", 1000);
+
+        var loaded = await _repository.GetByIdAsync("alice");
+        loaded.Should().NotBeNull();
+        loaded!.HeightInCm.Should().Be(1000);
+    }
+
+    [Fact]
+    public async Task EnsureExistsAsync_ForExistingUser_LeavesHeightUnchanged()
+    {
+        await _repository.AddAsync(new UserEntity("alice", 172));
+
+        await _repository.EnsureExistsAsync("alice", 1000);
+
+        var loaded = await _repository.GetByIdAsync("alice");
+        loaded!.HeightInCm.Should().Be(172);
+    }
 }

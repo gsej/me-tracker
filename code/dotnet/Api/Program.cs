@@ -27,6 +27,7 @@ public class Program
         }); 
        
         builder.Services.AddControllers();
+        builder.Services.AddSingleton<ApiKeyStore>();
         builder.Services.AddScoped<ApiKeyAuthFilter>();
         builder.Services.AddHttpContextAccessor();
         builder.Services.AddEndpointsApiExplorer();
@@ -70,6 +71,10 @@ public class Program
         builder.Services.AddScoped<ReportHandler>();
         
         var app = builder.Build();
+
+        // Validate the API key configuration at startup so a bad config fails the deploy
+        // rather than the first request that hits an authenticated endpoint.
+        app.Services.GetRequiredService<ApiKeyStore>();
 
         app.UseSwagger();
         app.UseSwaggerUI();

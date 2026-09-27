@@ -62,6 +62,22 @@ namespace Api.DataAccess
             return null;
         }
 
+        /// <summary>
+        /// Inserts a user row if one does not already exist. Idempotent and safe under
+        /// concurrent callers (relies on the UserId primary key), so it can be called on
+        /// every authenticated request to guarantee the auth identity has a profile row.
+        /// </summary>
+        public async Task EnsureExistsAsync(string userId, int defaultHeightInCm)
+        {
+            using var connection = new SqliteConnection(_connectionString);
+            await connection.OpenAsync();
+            var command = connection.CreateCommand();
+            command.CommandText = "INSERT OR IGNORE INTO Users (UserId, HeightInCm) VALUES ($userId, $heightInCm)";
+            command.Parameters.AddWithValue("$userId", userId);
+            command.Parameters.AddWithValue("$heightInCm", defaultHeightInCm);
+            await command.ExecuteNonQueryAsync();
+        }
+
         public async Task AddAsync(UserEntity entity)
         {
             using var connection = new SqliteConnection(_connectionString);

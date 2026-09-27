@@ -2,6 +2,7 @@ using System.Net;
 using System.Net.Http.Json;
 using Api.Controllers.Models;
 using Api.Controllers.Report;
+using Api.Filters;
 using AwesomeAssertions;
 
 namespace Tests.Integration;
@@ -35,6 +36,35 @@ public class HealthAndReportApiTests : IDisposable
 
         var report = await client.GetFromJsonAsync<WeightReport>("/api/report");
 
+        report!.Entries.Should().ContainSingle();
+        report.Entries[0].AverageWeight.Should().Be(90m);
+    }
+
+    [Fact]
+    public async Task Authenticating_SeedsAProfileRowWithSentinelHeight()
+    {
+        var client = _factory.CreateClientWithKey(ApiTestFactory.AliceKey);
+
+        // The auth filter runs before the action, so this single authenticated request
+        // both seeds alice's profile row and returns it.
+        var users = await client.GetFromJsonAsync<UsersCollection>("/api/backup/users");
+        var alice = users!.Users.Should().ContainSingle(u => u.UserId == ApiTestFactory.AliceUserId).Subject;
+        alice.heightInCm.Should().Be(ApiKeyAuthFilter.SeededHeightInCm);
+    }
+
+    [Fact]
+    public async Task Report_ForUserWithoutRestoredProfile_SucceedsUsingSeededHeight()
+    {
+        var client = _factory.CreateClientWithKey(ApiTestFactory.AliceKey);
+
+        // No backup/users restore — the profile row only exists because auth seeded it.
+        await client.PostAsJsonAsync("/api/weight",
+            new CreateWeightRecordRequest(new DateTime(2025, 1, 15), 90m));
+
+        var response = await client.GetAsync("/api/report");
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var report = await response.Content.ReadFromJsonAsync<WeightReport>();
         report!.Entries.Should().ContainSingle();
         report.Entries[0].AverageWeight.Should().Be(90m);
     }

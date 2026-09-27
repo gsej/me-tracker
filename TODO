@@ -3,11 +3,13 @@ Review test coverage
   are there any glaring holes in the test coverage for the c# app? 
   anything that needs covering and would be useful to build on or adapt when making an app with the same framework but different purpose?
 
+
 Final overall code review
 
   are there any obvious issues in the c# app that could be addressed?
-  - ReportController: null-user NRE - if a request's user has weights but no Users row,
-    user.HeightInCm throws (see CS8600/8604/8602 warnings). Null path is unguarded.
-  - ApiKeyAuthFilter: SingleOrDefault throws (instead of returning 401) if two configured
-    api keys share the same value.
-  are there any obvious issues in the angular app that could be addressed? 
+  are there any obvious issues in the angular app that could be addressed?
+
+
+Future work
+
+Replace the multiple backup and restore endpoints with one backup and one restore which return structured json objects containing both users and weights
