@@ -8,13 +8,14 @@ public class WeightEntity
     {
     }
 
-    public WeightEntity(Guid weightId, string userId, DateTime date, decimal weight, bool deleted)
+    public WeightEntity(Guid weightId, string userId, DateTime date, decimal weight, bool deleted, string? comment = null)
     {
         WeightId = weightId;
         UserId = userId;
         Date = date;
         Weight = weight;
         Deleted = deleted;
+        Comment = comment;
     }
 
     public Guid WeightId { get; init; }
@@ -26,4 +27,6 @@ public class WeightEntity
     public bool Deleted { get; set; } = false;
 
     public decimal Weight { get; set; }
+
+    public string? Comment { get; set; }
 }

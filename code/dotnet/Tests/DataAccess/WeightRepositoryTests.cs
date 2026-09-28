@@ -2,6 +2,7 @@ using Api.Controllers.Models;
 using Api.DataAccess;
 using AwesomeAssertions;
 using AwesomeAssertions.Execution;
+using Microsoft.Data.Sqlite;
 
 namespace Tests.DataAccess;
 
@@ -136,5 +137,101 @@ public class WeightRepositoryTests : IDisposable
         await _repository.HardDeleteAsync(entity);
 
         (await _repository.GetAllAsync()).Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task AddThenGetById_RoundTripsTheComment()
+    {
+        var id = Guid.NewGuid();
+        await _repository.AddAsync(
+            new WeightEntity(id, "alice", new DateTime(2025, 1, 15), 82.5m, false, "after a big lunch"));
+
+        var loaded = await _repository.GetByIdAsync(id, "alice");
+
+        loaded!.Comment.Should().Be("after a big lunch");
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData("   ")]
+    public async Task AddAsync_NormalisesEmptyOrWhitespaceCommentToNull(string? comment)
+    {
+        var id = Guid.NewGuid();
+        await _repository.AddAsync(
+            new WeightEntity(id, "alice", new DateTime(2025, 1, 15), 82.5m, false, comment));
+
+        var loaded = await _repository.GetByIdAsync(id, "alice");
+
+        loaded!.Comment.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task AddAsync_TrimsSurroundingWhitespaceFromComment()
+    {
+        var id = Guid.NewGuid();
+        await _repository.AddAsync(
+            new WeightEntity(id, "alice", new DateTime(2025, 1, 15), 82.5m, false, "  post-run  "));
+
+        var loaded = await _repository.GetByIdAsync(id, "alice");
+
+        loaded!.Comment.Should().Be("post-run");
+    }
+
+    [Fact]
+    public async Task UpdateAsync_SetsAndClearsTheComment()
+    {
+        var id = Guid.NewGuid();
+        var entity = new WeightEntity(id, "alice", new DateTime(2025, 1, 15), 82.5m, false);
+        await _repository.AddAsync(entity);
+
+        entity.Comment = "felt bloated";
+        await _repository.UpdateAsync(entity);
+        (await _repository.GetByIdAsync(id, "alice"))!.Comment.Should().Be("felt bloated");
+
+        entity.Comment = null;
+        await _repository.UpdateAsync(entity);
+        (await _repository.GetByIdAsync(id, "alice"))!.Comment.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task Constructor_AddsCommentColumnToAPreExistingTableWithoutIt()
+    {
+        // Simulate a database deployed before the Comment column existed: create the
+        // old-shape Weights table by hand, then construct the repository against it.
+        // The guarded ALTER TABLE must add the column so reads/writes still work.
+        var legacyDbPath = Path.Combine(Path.GetTempPath(), $"weight-repo-legacy-{Guid.NewGuid():N}.db");
+        try
+        {
+            using (var connection = new SqliteConnection($"Data Source={legacyDbPath}"))
+            {
+                connection.Open();
+                var create = connection.CreateCommand();
+                create.CommandText = """
+                    CREATE TABLE Weights (
+                        WeightId TEXT NOT NULL PRIMARY KEY,
+                        UserId TEXT NOT NULL,
+                        Date TEXT NOT NULL,
+                        Weight TEXT NOT NULL,
+                        Deleted INTEGER NOT NULL DEFAULT 0
+                    )
+                    """;
+                create.ExecuteNonQuery();
+            }
+
+            var repository = new WeightRepository($"Data Source={legacyDbPath}");
+            // A second construction must be a no-op (column already present).
+            _ = new WeightRepository($"Data Source={legacyDbPath}");
+
+            var id = Guid.NewGuid();
+            await repository.AddAsync(
+                new WeightEntity(id, "alice", new DateTime(2025, 1, 15), 82.5m, false, "migrated fine"));
+
+            (await repository.GetByIdAsync(id, "alice"))!.Comment.Should().Be("migrated fine");
+        }
+        finally
+        {
+            if (File.Exists(legacyDbPath)) File.Delete(legacyDbPath);
+        }
     }
 }

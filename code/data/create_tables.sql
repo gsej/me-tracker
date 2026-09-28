@@ -8,5 +8,6 @@ CREATE TABLE IF NOT EXISTS Weights (
     UserId TEXT NOT NULL,
     Date TEXT NOT NULL,
     Weight TEXT NOT NULL,
-    Deleted INTEGER NOT NULL DEFAULT 0
+    Deleted INTEGER NOT NULL DEFAULT 0,
+    Comment TEXT
 );

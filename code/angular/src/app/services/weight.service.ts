@@ -8,6 +8,7 @@ export interface WeightRecord {
   weightId: string;
   date: string;
   weight: number;
+  comment?: string;
 }
 
 export interface WeightsCollection {
@@ -52,7 +53,8 @@ export class WeightService {
           const formattedRecords = sortedRecords.map(record => ({
             weightId: record.weightId,
             date: new Date(record.date).toLocaleDateString(),
-            weight: record.weight
+            weight: record.weight,
+            comment: record.comment
           }));
           this.weightRecordsSubject.next(formattedRecords);
           this.isLoadingSubject.next(false);
@@ -65,16 +67,27 @@ export class WeightService {
       });
   }
 
-  addWeightRecord(weight: number): Observable<void> {
+  addWeightRecord(weight: number, comment?: string): Observable<void> {
     const payload = {
       weight: weight,
-      date: new Date()
+      date: new Date(),
+      comment: comment
     };
 
     return this.http.post<void>(`${this.apiUrl}/api/weight`, payload)
       .pipe(
         tap(() => {
           // After successfully adding a new record, refresh the list
+          this.loadWeightRecords();
+        })
+      );
+  }
+
+  updateComment(weightId: string, comment: string | null): Observable<void> {
+    return this.http.put<void>(`${this.apiUrl}/api/weight/${weightId}`, { comment })
+      .pipe(
+        tap(() => {
+          // After successfully updating, refresh the list
           this.loadWeightRecords();
         })
       );

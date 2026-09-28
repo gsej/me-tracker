@@ -34,7 +34,7 @@ template-ness.
 Backend (from `code/dotnet/`):
 ```bash
 dotnet build
-dotnet test                     # xUnit; 37 tests
+dotnet test                     # xUnit; 52 tests
 dotnet run --project Api        # local API on http://localhost:5200
 ```
 
@@ -72,12 +72,19 @@ of `apikey` (user `ApiUser`). The Angular app reads `apiUrl` at runtime from
   one user must never read another's data. Keep it covered by tests.
 - **Weights are soft-deleted** (a `Deleted` flag); normal reads exclude them, the
   backup endpoint reads everything.
+- **A weight entry carries an optional free-text `Comment`** — nullable, capped at
+  200 chars (via `[MaxLength]` on the request records; `[ApiController]` turns that
+  into an automatic `400`), with empty/whitespace normalised to `NULL` in the
+  repository. Set it on create, or edit it later via `PUT /api/weight/{id}`.
+- **Schema changes use a guarded `ALTER TABLE`, not a migration framework** —
+  `WeightRepository.EnsureTablesExist` adds any missing column idempotently
+  (checking `PRAGMA table_info` first), so a deployed database picks up new columns
+  on next start. This is how `Comment` was added; follow the same pattern.
 - **Dates are stored/returned as UTC** regardless of server timezone (there's a
   regression test guarding this) — preserve that when touching the data layer.
 - SQLite persistence stores dates as ISO `"O"` and decimals with `InvariantCulture`.
 
 ## Conventions
 
-- **Never** add a `Co-Authored-By` trailer to commits (global rule).
 - The API is polished as a skeleton; the `TODO` file at the repo root tracks
   ongoing work and known issues.

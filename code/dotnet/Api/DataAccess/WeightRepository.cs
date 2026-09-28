@@ -13,7 +13,7 @@ namespace Api.DataAccess
             _connectionString = connectionString;
             EnsureTablesExist();
         }
-
+    
         private void EnsureTablesExist()
         {
             using var connection = new SqliteConnection(_connectionString);
@@ -29,6 +29,34 @@ namespace Api.DataAccess
                 )
                 """;
             command.ExecuteNonQuery();
+
+            AddColumnIfMissing(connection, "Comment", "TEXT");
+        }
+
+        /// <summary>
+        /// Adds a column to the Weights table if it isn't already present. SQLite's
+        /// CREATE TABLE IF NOT EXISTS never alters an existing table, so this keeps a
+        /// previously-deployed database in step with the schema without a migration
+        /// framework (there are only two environments: local dev and one prod instance).
+        /// </summary>
+        private static void AddColumnIfMissing(SqliteConnection connection, string columnName, string columnType)
+        {
+            var pragma = connection.CreateCommand();
+            pragma.CommandText = "PRAGMA table_info(Weights)";
+            using (var reader = pragma.ExecuteReader())
+            {
+                while (reader.Read())
+                {
+                    if (string.Equals(reader.GetString(1), columnName, StringComparison.OrdinalIgnoreCase))
+                    {
+                        return;
+                    }
+                }
+            }
+
+            var alter = connection.CreateCommand();
+            alter.CommandText = $"ALTER TABLE Weights ADD COLUMN {columnName} {columnType}";
+            alter.ExecuteNonQuery();
         }
 
         /// <summary>
@@ -39,7 +67,7 @@ namespace Api.DataAccess
             using var connection = new SqliteConnection(_connectionString);
             await connection.OpenAsync();
             var command = connection.CreateCommand();
-            command.CommandText = "SELECT WeightId, UserId, Date, Weight, Deleted FROM Weights WHERE UserId = $userId AND Deleted = 0";
+            command.CommandText = "SELECT WeightId, UserId, Date, Weight, Deleted, Comment FROM Weights WHERE UserId = $userId AND Deleted = 0";
             command.Parameters.AddWithValue("$userId", userId);
 
             var results = new List<WeightEntity>();
@@ -59,7 +87,7 @@ namespace Api.DataAccess
             using var connection = new SqliteConnection(_connectionString);
             await connection.OpenAsync();
             var command = connection.CreateCommand();
-            command.CommandText = "SELECT WeightId, UserId, Date, Weight, Deleted FROM Weights";
+            command.CommandText = "SELECT WeightId, UserId, Date, Weight, Deleted, Comment FROM Weights";
 
             var results = new List<WeightEntity>();
             using var reader = await command.ExecuteReaderAsync();
@@ -75,7 +103,7 @@ namespace Api.DataAccess
             using var connection = new SqliteConnection(_connectionString);
             await connection.OpenAsync();
             var command = connection.CreateCommand();
-            command.CommandText = "SELECT WeightId, UserId, Date, Weight, Deleted FROM Weights WHERE WeightId = $weightId AND UserId = $userId AND Deleted = 0";
+            command.CommandText = "SELECT WeightId, UserId, Date, Weight, Deleted, Comment FROM Weights WHERE WeightId = $weightId AND UserId = $userId AND Deleted = 0";
             command.Parameters.AddWithValue("$weightId", weightId.ToString());
             command.Parameters.AddWithValue("$userId", userId);
 
@@ -92,12 +120,13 @@ namespace Api.DataAccess
             using var connection = new SqliteConnection(_connectionString);
             await connection.OpenAsync();
             var command = connection.CreateCommand();
-            command.CommandText = "INSERT INTO Weights (WeightId, UserId, Date, Weight, Deleted) VALUES ($weightId, $userId, $date, $weight, $deleted)";
+            command.CommandText = "INSERT INTO Weights (WeightId, UserId, Date, Weight, Deleted, Comment) VALUES ($weightId, $userId, $date, $weight, $deleted, $comment)";
             command.Parameters.AddWithValue("$weightId", entity.WeightId.ToString());
             command.Parameters.AddWithValue("$userId", entity.UserId);
             command.Parameters.AddWithValue("$date", ToUtc(entity.Date).ToString("O"));
             command.Parameters.AddWithValue("$weight", entity.Weight.ToString(CultureInfo.InvariantCulture));
             command.Parameters.AddWithValue("$deleted", entity.Deleted ? 1 : 0);
+            command.Parameters.AddWithValue("$comment", (object?)NormaliseComment(entity.Comment) ?? DBNull.Value);
             await command.ExecuteNonQueryAsync();
         }
 
@@ -106,10 +135,11 @@ namespace Api.DataAccess
             using var connection = new SqliteConnection(_connectionString);
             await connection.OpenAsync();
             var command = connection.CreateCommand();
-            command.CommandText = "UPDATE Weights SET Date = $date, Weight = $weight, Deleted = $deleted WHERE WeightId = $weightId";
+            command.CommandText = "UPDATE Weights SET Date = $date, Weight = $weight, Deleted = $deleted, Comment = $comment WHERE WeightId = $weightId";
             command.Parameters.AddWithValue("$date", ToUtc(entity.Date).ToString("O"));
             command.Parameters.AddWithValue("$weight", entity.Weight.ToString(CultureInfo.InvariantCulture));
             command.Parameters.AddWithValue("$deleted", entity.Deleted ? 1 : 0);
+            command.Parameters.AddWithValue("$comment", (object?)NormaliseComment(entity.Comment) ?? DBNull.Value);
             command.Parameters.AddWithValue("$weightId", entity.WeightId.ToString());
             await command.ExecuteNonQueryAsync();
         }
@@ -137,9 +167,18 @@ namespace Api.DataAccess
                 reader.GetString(1),
                 ToUtc(DateTime.Parse(reader.GetString(2), CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind)),
                 decimal.Parse(reader.GetString(3), CultureInfo.InvariantCulture),
-                reader.GetInt32(4) != 0
+                reader.GetInt32(4) != 0,
+                reader.IsDBNull(5) ? null : reader.GetString(5)
             );
         }
+
+        /// <summary>
+        /// Normalises a comment so that empty or whitespace-only text is stored as NULL
+        /// rather than an empty string. This keeps display logic to a simple
+        /// "show only when present" check and keeps the data clean.
+        /// </summary>
+        private static string? NormaliseComment(string? comment) =>
+            string.IsNullOrWhiteSpace(comment) ? null : comment.Trim();
 
         /// <summary>
         /// Normalises a date to UTC so weights are stored and returned as UTC regardless of the

@@ -19,6 +19,7 @@ export class WeightInputComponent {
   weightForm: FormGroup;
   status: string | null = null;
   errorStatusCode: string | null = null;
+  showNote = false;
   private successTimer: any;
 
   constructor(
@@ -27,7 +28,12 @@ export class WeightInputComponent {
   ) {
     this.weightForm = this.fb.group({
       weight: ['', [Validators.required, Validators.min(0)]],
+      comment: ['', [Validators.maxLength(200)]],
     });
+  }
+
+  toggleNote() {
+    this.showNote = !this.showNote;
   }
 
   private clearStatusAfterDelay() {
@@ -42,12 +48,14 @@ export class WeightInputComponent {
   onSubmit() {
     if (this.weightForm.valid) {
       const weight = this.weightForm.value.weight;
+      const comment = this.weightForm.value.comment?.trim() || undefined;
 
-      this.weightService.addWeightRecord(weight).subscribe({
+      this.weightService.addWeightRecord(weight, comment).subscribe({
         next: () => {
           this.status = 'Success';
           this.errorStatusCode = null;
           this.weightForm.reset();
+          this.showNote = false;
           this.clearStatusAfterDelay();
         },
         error: (error) => {

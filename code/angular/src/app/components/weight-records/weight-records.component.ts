@@ -1,10 +1,11 @@
 import { Component, OnInit, ChangeDetectionStrategy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { WeightService } from '../../services/weight.service';
 
 @Component({
   selector: 'app-weight-records',
-  imports: [CommonModule],
+  imports: [CommonModule, FormsModule],
   templateUrl: './weight-records.component.html',
   changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./weight-records.component.scss'],
@@ -16,8 +17,32 @@ export class WeightRecordsComponent implements OnInit {
   readonly isLoading$ = this.weightService.isLoading$;
   readonly error$ = this.weightService.error$;
 
+  editingId: string | null = null;
+  editValue = '';
+
   ngOnInit(): void {
     this.loadWeightRecords();
+  }
+
+  startEdit(weightId: string, currentComment?: string): void {
+    this.editingId = weightId;
+    this.editValue = currentComment ?? '';
+  }
+
+  cancelEdit(): void {
+    this.editingId = null;
+    this.editValue = '';
+  }
+
+  saveEdit(weightId: string): void {
+    const trimmed = this.editValue.trim();
+    this.weightService.updateComment(weightId, trimmed === '' ? null : trimmed).subscribe({
+      next: () => this.cancelEdit(),
+      error: (error) => {
+        console.error('Error updating comment:', error);
+        this.cancelEdit();
+      },
+    });
   }
 
   loadWeightRecords(): void {

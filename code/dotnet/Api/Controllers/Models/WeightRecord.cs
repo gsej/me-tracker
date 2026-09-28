@@ -1,8 +1,9 @@
 namespace Api.Controllers.Models;
 
 public record WeightRecord(
-    Guid WeightId, 
-    string UserId, 
-    DateTime Date, 
+    Guid WeightId,
+    string UserId,
+    DateTime Date,
     decimal Weight,
-    bool Deleted);
+    bool Deleted,
+    string? Comment = null);

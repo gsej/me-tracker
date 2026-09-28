@@ -103,4 +103,109 @@ public class WeightApiTests : IDisposable
         var collection = await client.GetFromJsonAsync<WeightsCollection>("/api/weights");
         collection!.WeightRecords.Should().BeEmpty();
     }
+
+    [Fact]
+    public async Task PostThenGet_RoundTripsTheComment()
+    {
+        var client = _factory.CreateClientWithKey(ApiTestFactory.AliceKey);
+
+        await client.PostAsJsonAsync("/api/weight",
+            new CreateWeightRecordRequest(new DateTime(2025, 1, 15), 82.5m, "after a big lunch"));
+
+        var record = (await client.GetFromJsonAsync<WeightsCollection>("/api/weights"))!
+            .WeightRecords!.Single();
+
+        record.Comment.Should().Be("after a big lunch");
+    }
+
+    [Fact]
+    public async Task PostWithoutComment_YieldsNoComment()
+    {
+        var client = _factory.CreateClientWithKey(ApiTestFactory.AliceKey);
+
+        await client.PostAsJsonAsync("/api/weight",
+            new CreateWeightRecordRequest(new DateTime(2025, 1, 15), 82.5m));
+
+        var record = (await client.GetFromJsonAsync<WeightsCollection>("/api/weights"))!
+            .WeightRecords!.Single();
+
+        record.Comment.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task Put_UpdatesTheComment()
+    {
+        var client = _factory.CreateClientWithKey(ApiTestFactory.AliceKey);
+        await client.PostAsJsonAsync("/api/weight",
+            new CreateWeightRecordRequest(new DateTime(2025, 1, 15), 82.5m));
+        var record = (await client.GetFromJsonAsync<WeightsCollection>("/api/weights"))!
+            .WeightRecords!.Single();
+
+        var put = await client.PutAsJsonAsync($"/api/weight/{record.WeightId}",
+            new UpdateWeightRecordRequest("added later"));
+
+        using var _ = new AssertionScope();
+        put.StatusCode.Should().Be(HttpStatusCode.NoContent);
+
+        var updated = (await client.GetFromJsonAsync<WeightsCollection>("/api/weights"))!
+            .WeightRecords!.Single();
+        updated.Comment.Should().Be("added later");
+    }
+
+    [Fact]
+    public async Task Put_ForAnotherUsersRecord_ReturnsNotFoundAndDoesNotChangeIt()
+    {
+        var alice = _factory.CreateClientWithKey(ApiTestFactory.AliceKey);
+        var bob = _factory.CreateClientWithKey(ApiTestFactory.BobKey);
+        await alice.PostAsJsonAsync("/api/weight",
+            new CreateWeightRecordRequest(new DateTime(2025, 1, 15), 82.5m, "alice's note"));
+        var aliceRecord = (await alice.GetFromJsonAsync<WeightsCollection>("/api/weights"))!
+            .WeightRecords!.Single();
+
+        var bobPut = await bob.PutAsJsonAsync($"/api/weight/{aliceRecord.WeightId}",
+            new UpdateWeightRecordRequest("bob's meddling"));
+
+        using var _ = new AssertionScope();
+        bobPut.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        var stillAlices = (await alice.GetFromJsonAsync<WeightsCollection>("/api/weights"))!
+            .WeightRecords!.Single();
+        stillAlices.Comment.Should().Be("alice's note");
+    }
+
+    [Fact]
+    public async Task Put_ForUnknownRecord_ReturnsNotFound()
+    {
+        var client = _factory.CreateClientWithKey(ApiTestFactory.AliceKey);
+
+        var put = await client.PutAsJsonAsync($"/api/weight/{Guid.NewGuid()}",
+            new UpdateWeightRecordRequest("nope"));
+
+        put.StatusCode.Should().Be(HttpStatusCode.NotFound);
+    }
+
+    [Fact]
+    public async Task Post_WithOverlongComment_ReturnsBadRequest()
+    {
+        var client = _factory.CreateClientWithKey(ApiTestFactory.AliceKey);
+
+        var response = await client.PostAsJsonAsync("/api/weight",
+            new CreateWeightRecordRequest(new DateTime(2025, 1, 15), 82.5m, new string('x', 201)));
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
+
+    [Fact]
+    public async Task Put_WithOverlongComment_ReturnsBadRequest()
+    {
+        var client = _factory.CreateClientWithKey(ApiTestFactory.AliceKey);
+        await client.PostAsJsonAsync("/api/weight",
+            new CreateWeightRecordRequest(new DateTime(2025, 1, 15), 82.5m));
+        var record = (await client.GetFromJsonAsync<WeightsCollection>("/api/weights"))!
+            .WeightRecords!.Single();
+
+        var put = await client.PutAsJsonAsync($"/api/weight/{record.WeightId}",
+            new UpdateWeightRecordRequest(new string('x', 201)));
+
+        put.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
 }

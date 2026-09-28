@@ -7,9 +7,10 @@ POST {{baseUrl}}/weight
 Content-Type: application/json
 X-Api-Key: apikey
 
-{           
+{
     "date": "2025-04-18T07:23:29.049Z",
-    "weight": 12
+    "weight": 12,
+    "comment": "after a big lunch"
 }
 
 
@@ -21,6 +22,17 @@ X-Api-Key: apikey
 
 GET {{locationHeader}}
 X-Api-Key: apikey
+
+
+### update the comment on the created entry
+
+PUT {{locationHeader}}
+Content-Type: application/json
+X-Api-Key: apikey
+
+{
+    "comment": "added this note later"
+}
 
 ### get all entries for user
 

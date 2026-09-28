@@ -70,6 +70,27 @@ public class BackupApiTests : IDisposable
     }
 
     [Fact]
+    public async Task Restore_RoundTripsComments()
+    {
+        var client = _factory.CreateClientWithKey(ApiTestFactory.AliceKey);
+
+        await client.PostAsJsonAsync("/api/backup/restore", new Backup(
+            new[] { new User(ApiTestFactory.AliceUserId, 180) },
+            new[]
+            {
+                new WeightRecord(Guid.NewGuid(), ApiTestFactory.AliceUserId, new DateTime(2025, 1, 1), 80m, false, "new year"),
+                new WeightRecord(Guid.NewGuid(), ApiTestFactory.AliceUserId, new DateTime(2025, 1, 2), 81m, false),
+            }));
+
+        var backup = await client.GetFromJsonAsync<Backup>("/api/backup");
+
+        var records = backup!.WeightRecords!.OrderBy(r => r.Date).ToList();
+        records.Should().HaveCount(2);
+        records[0].Comment.Should().Be("new year");
+        records[1].Comment.Should().BeNull();
+    }
+
+    [Fact]
     public async Task Backup_IncludesSoftDeletedWeights()
     {
         var client = _factory.CreateClientWithKey(ApiTestFactory.AliceKey);
