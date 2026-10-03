@@ -45,7 +45,8 @@ public class ReportHandlerTests
         
         date2Entry.Should().NotBeNull();
         date2Entry!.RecordedWeight.Should().Be(101);
-        date2Entry!.AverageWeight.Should().Be(90.5m);
+        // EWMA of [80, 101] with alpha = 2/(7+1) = 0.25: 0.25*101 + 0.75*80.
+        date2Entry!.AverageWeight.Should().Be(85.25m);
     }
     
     [Fact]
@@ -68,7 +69,7 @@ public class ReportHandlerTests
     }
     
     [Fact]
-    public void HandleShouldReturnEntriesAveragingThePrevious7Days()
+    public void HandleShouldReturnEntriesExponentiallyWeightingThePrevious7Days()
     {
         var firstDate = new DateTime(2023, 10, 1);
 
@@ -93,42 +94,45 @@ public class ReportHandlerTests
         using var _ = new AwesomeAssertions.Execution.AssertionScope();
         
         report.Entries.Count.Should().Be(18);
-        
+
+        // RecordedWeight is unchanged by the switch to EWMA (it is the latest value in the
+        // window). AverageWeight is now exponentially weighted (alpha = 2/(7+1) = 0.25), so
+        // recent days pull the figure more than older ones.
         report.Entries[0].RecordedWeight.Should().Be(100);
-        report.Entries[0].AverageWeight.Should().Be(100);
-        
+        report.Entries[0].AverageWeight.Should().BeApproximately(100m, 0.01m);
+
         report.Entries[1].RecordedWeight.Should().Be(99);
-        report.Entries[1].AverageWeight.Should().Be(99.5m);
-        
+        report.Entries[1].AverageWeight.Should().BeApproximately(99.75m, 0.01m);
+
         report.Entries[2].RecordedWeight.Should().Be(98);
-        report.Entries[2].AverageWeight.Should().Be(99);
-        
+        report.Entries[2].AverageWeight.Should().BeApproximately(99.31m, 0.01m);
+
         report.Entries[3].RecordedWeight.Should().Be(97);
-        report.Entries[3].AverageWeight.Should().Be(98.5m);
-        
+        report.Entries[3].AverageWeight.Should().BeApproximately(98.73m, 0.01m);
+
         report.Entries[4].RecordedWeight.Should().Be(96);
-        report.Entries[4].AverageWeight.Should().Be(98);
-        
+        report.Entries[4].AverageWeight.Should().BeApproximately(98.05m, 0.01m);
+
         report.Entries[5].RecordedWeight.Should().Be(95);
-        report.Entries[5].AverageWeight.Should().Be(97.5m);
-        
+        report.Entries[5].AverageWeight.Should().BeApproximately(97.29m, 0.01m);
+
         report.Entries[6].RecordedWeight.Should().Be(94);
-        report.Entries[6].AverageWeight.Should().Be(97);
-        
+        report.Entries[6].AverageWeight.Should().BeApproximately(96.47m, 0.01m);
+
         report.Entries[7].RecordedWeight.Should().Be(93);
-        report.Entries[7].AverageWeight.Should().Be(96);
-        
+        report.Entries[7].AverageWeight.Should().BeApproximately(95.47m, 0.01m);
+
         report.Entries[8].RecordedWeight.Should().Be(92);
-        report.Entries[8].AverageWeight.Should().Be(95);
-        
+        report.Entries[8].AverageWeight.Should().BeApproximately(94.47m, 0.01m);
+
         report.Entries[9].RecordedWeight.Should().Be(91);
-        report.Entries[9].AverageWeight.Should().Be(94);
-        
+        report.Entries[9].AverageWeight.Should().BeApproximately(93.47m, 0.01m);
+
         report.Entries[13].RecordedWeight.Should().Be(500);
-        report.Entries[13].AverageWeight.Should().Be(194);
-        
+        report.Entries[13].AverageWeight.Should().BeApproximately(194.23m, 0.01m);
+
         report.Entries[17].RecordedWeight.Should().Be(500);
-        report.Entries[17].AverageWeight.Should().Be(500);
+        report.Entries[17].AverageWeight.Should().BeApproximately(500m, 0.01m);
     }
     
     [Fact]

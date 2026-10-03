@@ -57,7 +57,7 @@ public class ReportHandler
             else
             {
                 recordedWeight = previousEntries.Last();
-                movingAverageWeight = previousEntries.Average();
+                movingAverageWeight = ExponentialMovingAverage(previousEntries, _settings.AverageWeightWindowInDays);
             }
 
             var heightInMetres = (decimal)heightInCm / 100;
@@ -108,7 +108,21 @@ public class ReportHandler
         // best available estimate and keeps the report from throwing on sparse data.
         return previousEntries.Count == 0
             ? fallbackWeight
-            : previousEntries.Average();
+            : ExponentialMovingAverage(previousEntries, windowInDays);
+    }
+
+    // Exponentially weighted moving average over an oldest-to-newest ordered list, so recent
+    // measurements count for more than older ones. alpha = 2/(N+1) ties the decay to the window
+    // length, keeping each report period (1/2/4/12 week) distinctly responsive.
+    private static decimal ExponentialMovingAverage(IList<decimal> ordered, int windowInDays)
+    {
+        var alpha = 2m / (windowInDays + 1);
+        var average = ordered[0];
+        for (var i = 1; i < ordered.Count; i++)
+        {
+            average = alpha * ordered[i] + (1 - alpha) * average;
+        }
+        return average;
     }
 
     private decimal CalculateLastNWeekChange(List<Stage2ReportEntry> stage2Entries, DateOnly date, decimal movingAverageWeight, int weeks)
