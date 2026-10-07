@@ -48,23 +48,11 @@ export class WeightReportService {
     this.http.get<WeightReport>(`${this.apiUrl}/api/report`)
       .subscribe({
         next: (data) => {
-
           const sortedEntries = [...data.entries].sort((a, b) => {
             return new Date(b.date).getTime() - new Date(a.date).getTime();
           });
 
-          const formattedRecords = sortedEntries.map(entry => ({
-            date: new Date(entry.date).toLocaleDateString(),
-            recordedWeight: entry.recordedWeight,
-            averageWeight: entry.averageWeight,
-            bmi: entry.bmi,
-            oneWeekChange: entry.oneWeekChange,
-            twoWeekChange: entry.twoWeekChange,
-            fourWeekChange: entry.fourWeekChange,
-            twelveWeekChange: entry.twelveWeekChange
-
-          }));
-          this.weightReportSubject.next({ entries: formattedRecords });
+          this.weightReportSubject.next({ entries: sortedEntries });
           this.isLoadingSubject.next(false);
         },
         error: (error) => {

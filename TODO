@@ -1,0 +1,7 @@
+# TODO
+
+- Dedupe the weight report fetch: `weight-report` and `weight-chart` both call
+  `WeightReportService.loadWeightReport()` on init, and all carousel pages mount
+  at startup, so the app issues two `GET /api/report` calls on load. Harmless but
+  wasteful. Simplest fix is an in-flight guard in the service (skip if a request
+  is already running). See weight-chart-plan.md.
