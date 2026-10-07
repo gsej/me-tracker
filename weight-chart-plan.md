@@ -18,8 +18,13 @@ deferred to a later iteration.
 ## Status
 
 - [x] Date-formatting refactor (prerequisite — see Step 0 below).
-- [ ] `uplot` install was reverted during review — reinstall as part of Step 1.
-- [ ] everything else.
+- [x] Steps 1-6 implemented; `npm run build` passes.
+
+### Known follow-up
+- `weight-report` and `weight-chart` both call `loadWeightReport()` on init, and
+  all carousel pages mount at startup, so the app issues two `GET /api/report`
+  calls on load. Harmless but wasteful — a later cleanup could dedupe in the
+  service (skip if a load is already in flight / data is fresh).
 
 ## Step 0 (DONE): move date formatting from service to components
 - `weight-report.service.ts` now passes raw API entries straight through
