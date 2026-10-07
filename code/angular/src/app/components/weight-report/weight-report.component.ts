@@ -27,4 +27,8 @@ export class WeightReportComponent implements OnInit {
   onRetry(): void {
     this.loadWeightReport();
   }
+
+  formatDate(date: string): string {
+    return new Date(date).toLocaleDateString();
+  }
 }
