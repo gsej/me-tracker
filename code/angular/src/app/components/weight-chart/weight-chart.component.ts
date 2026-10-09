@@ -101,9 +101,13 @@ export class WeightChartComponent implements OnInit, AfterViewInit, OnDestroy {
       height,
       scales: { x: { time: true } },
       series: [
-        {},
         {
-          label: 'Average (kg)',
+          label: 'Date',
+          value: (_self, rawValue) =>
+            rawValue == null ? '--' : new Date(rawValue * 1000).toLocaleDateString(),
+        },
+        {
+          label: 'Weight (kg)',
           stroke: '#3b82f6',
           width: 2,
           points: { show: false },
@@ -127,9 +131,11 @@ export class WeightChartComponent implements OnInit, AfterViewInit, OnDestroy {
 
   private currentSize(): { width: number; height: number } {
     const el = this.chartContainer!.nativeElement;
-    return {
-      width: el.clientWidth || 300,
-      height: el.clientHeight || 200,
-    };
+    const width = el.clientWidth || 300;
+    const available = el.clientHeight || 200;
+    // Prefer a 16:9 height, but never exceed the space available (keeps
+    // landscape fitting on screen, while portrait gets the nicer ratio).
+    const height = Math.min(available, Math.max(150, Math.round(width * 9 / 16)));
+    return { width, height };
   }
 }
