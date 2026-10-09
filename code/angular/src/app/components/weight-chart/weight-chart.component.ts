@@ -6,6 +6,7 @@ import {
   ChangeDetectionStrategy,
   ViewChild,
   ElementRef,
+  Input,
   inject,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
@@ -34,11 +35,19 @@ export class WeightChartComponent implements OnInit, AfterViewInit, OnDestroy {
   private subscription?: Subscription;
   private viewReady = false;
   private data?: uPlot.AlignedData;
+  private report: WeightReport | null = null;
+  private _rangeMonths: number | null = 3;
+
+  /** Number of months (from the latest entry) to show, or `null` for all data. */
+  @Input() set rangeMonths(value: number | null) {
+    this._rangeMonths = value;
+    this.rebuild();
+  }
 
   ngOnInit(): void {
     this.subscription = this.weightReport$.subscribe((report) => {
-      this.data = this.toChartData(report);
-      this.renderChart();
+      this.report = report;
+      this.rebuild();
     });
     this.weightReportService.loadWeightReport();
   }
@@ -59,6 +68,12 @@ export class WeightChartComponent implements OnInit, AfterViewInit, OnDestroy {
     this.weightReportService.loadWeightReport();
   }
 
+  /** Re-filter the current report for the selected range and repaint. */
+  private rebuild(): void {
+    this.data = this.toChartData(this.report);
+    this.renderChart();
+  }
+
   /** Build uPlot [x, y] arrays: x = unix seconds (ascending), y = moving average. */
   private toChartData(report: WeightReport | null): uPlot.AlignedData | undefined {
     if (!report || report.entries.length === 0) {
@@ -67,9 +82,27 @@ export class WeightChartComponent implements OnInit, AfterViewInit, OnDestroy {
     const sorted = [...report.entries].sort(
       (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
     );
-    const xs = sorted.map((e) => Math.floor(new Date(e.date).getTime() / 1000));
-    const ys = sorted.map((e) => e.averageWeight);
+    const windowed = this.filterByRange(sorted);
+    if (windowed.length === 0) {
+      return undefined;
+    }
+    const xs = windowed.map((e) => Math.floor(new Date(e.date).getTime() / 1000));
+    const ys = windowed.map((e) => e.averageWeight);
     return [xs, ys];
+  }
+
+  /**
+   * Keep only entries within `rangeMonths` of the most recent entry (so the
+   * default view always shows the latest data). `null` means "all data".
+   */
+  private filterByRange<T extends { date: string }>(sortedAsc: T[]): T[] {
+    if (this._rangeMonths == null || sortedAsc.length === 0) {
+      return sortedAsc;
+    }
+    const latest = new Date(sortedAsc[sortedAsc.length - 1].date);
+    const cutoff = new Date(latest);
+    cutoff.setMonth(cutoff.getMonth() - this._rangeMonths);
+    return sortedAsc.filter((e) => new Date(e.date).getTime() >= cutoff.getTime());
   }
 
   private renderChart(): void {
