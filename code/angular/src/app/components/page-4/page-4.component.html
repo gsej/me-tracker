@@ -1,6 +1,24 @@
 <div class="w-full  h-[calc(100%-3rem)] flex flex-col">
-  <h2 class="text-xl font-bold text-blue-500 mb-4 text-center pt-2">Weight Chart</h2>
+  <div class="relative pt-2 mb-2">
+    <h2 class="text-xl font-bold text-blue-500 text-center">Weight Chart</h2>
+    <nav
+      class="flex justify-center gap-4 mt-2 text-sm landscape:mt-0 landscape:absolute landscape:top-0 landscape:right-4"
+    >
+      @for (opt of rangeOptions; track opt.label) {
+        <button
+          type="button"
+          (click)="selectedRange = opt.months"
+          class="px-1 transition-colors"
+          [class.font-bold]="opt.months === selectedRange"
+          [class.text-blue-500]="opt.months === selectedRange"
+          [class.text-gray-400]="opt.months !== selectedRange"
+        >
+          {{ opt.label }}
+        </button>
+      }
+    </nav>
+  </div>
   <div class="w-full flex-1 min-h-0 px-4 pb-4">
-    <app-weight-chart></app-weight-chart>
+    <app-weight-chart [rangeMonths]="selectedRange"></app-weight-chart>
   </div>
 </div>
