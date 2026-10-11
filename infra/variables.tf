@@ -87,9 +87,9 @@ variable "storage_datastore_id" {
 }
 
 variable "data_size_gb" {
-  description = "Size of the data mount point in GiB (the SQLite DB is tiny)"
+  description = "Size of the data mount point in GiB (the SQLite DB is tiny; thin-provisioned)"
   type        = number
-  default     = 8
+  default     = 1
 }
 
 # ---- Networking ------------------------------------------------------------

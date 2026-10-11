@@ -18,10 +18,10 @@ proxmox_password = "change-me"
 # --- Container placement / sizing ---
 datastore_id         = "local-lvm"
 storage_datastore_id = "local-lvm"
-data_size_gb         = 8
+data_size_gb         = 1
 
 # --- Networking (static so the Ansible inventory points at a known address) ---
-container_ip_cidr = "192.168.1.60/24"
+container_ip_cidr = "192.168.1.132/24"
 container_gateway = "192.168.1.1"
 dns_servers       = ["192.168.1.1"]
 
