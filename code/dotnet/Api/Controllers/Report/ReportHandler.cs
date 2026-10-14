@@ -64,16 +64,14 @@ public class ReportHandler
 
             var bmi = Math.Round(movingAverageWeight / (heightInMetres * heightInMetres), 2);
 
+            // Every N-week change compares the same 7-day moving average at both ends:
+            // the value now against the value N weeks ago. Using a longer N*7-day trailing
+            // average for the "now" side would mix bases (the stored value N weeks ago is
+            // always the 7-day average) and can flip the sign of the reported change.
             var oneWeekChange = CalculateLastNWeekChange(stage2Entries, date, movingAverageWeight, 1);
-
-            var twoWeekAverage = CalculateMovingAverageWeight(stage1Entries, date, 14, movingAverageWeight);
-            var twoWeekChange = CalculateLastNWeekChange(stage2Entries, date, twoWeekAverage, 2);
-
-            var fourWeekAverage = CalculateMovingAverageWeight(stage1Entries, date, 28, movingAverageWeight);
-            var fourWeekChange = CalculateLastNWeekChange(stage2Entries, date, fourWeekAverage, 4);
-
-            var twelveWeekAverage = CalculateMovingAverageWeight(stage1Entries, date, 84, movingAverageWeight);
-            var twelveWeekChange = CalculateLastNWeekChange(stage2Entries, date, twelveWeekAverage, 12);
+            var twoWeekChange = CalculateLastNWeekChange(stage2Entries, date, movingAverageWeight, 2);
+            var fourWeekChange = CalculateLastNWeekChange(stage2Entries, date, movingAverageWeight, 4);
+            var twelveWeekChange = CalculateLastNWeekChange(stage2Entries, date, movingAverageWeight, 12);
 
             var entry = new Stage2ReportEntry(date, 
                 recordedWeight, 
@@ -93,22 +91,6 @@ public class ReportHandler
         };
 
         return report;
-    }
-
-    private decimal CalculateMovingAverageWeight(IList<Stage1ReportEntry> stage1Entries, DateOnly date, int windowInDays, decimal fallbackWeight)
-    {
-        var previousEntries = stage1Entries
-            .Where(entry => entry.Date > date.AddDays(-windowInDays) && entry.Date <= date)
-            .OrderBy(entry => entry.Date)
-            .Select(entry => entry.Weight)
-            .ToList();
-
-        // A gap wider than the window leaves no records to average. This window always
-        // contains the 7-day window, so the day's (carried-forward) moving average is the
-        // best available estimate and keeps the report from throwing on sparse data.
-        return previousEntries.Count == 0
-            ? fallbackWeight
-            : ExponentialMovingAverage(previousEntries, windowInDays);
     }
 
     // Exponentially weighted moving average over an oldest-to-newest ordered list, so recent

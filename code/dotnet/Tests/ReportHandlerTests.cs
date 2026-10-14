@@ -174,6 +174,51 @@ public class ReportHandlerTests
     }
 
     [Fact]
+    public void NWeekChangeShouldCompareTheSevenDayAverageAtBothEnds()
+    {
+        // Regression test for the N-week change columns.
+        //
+        // Each N-week change must be (7-day moving average now) − (7-day moving average N
+        // weeks ago): the *same* basis at both ends, exactly like OneWeekChange. The bug
+        // compared a longer N*7-day trailing average "now" against the stored 7-day average
+        // "then", which mixes bases and can even flip the sign of the result.
+        //
+        // Timeline (one weight per day, firstDate = day 0, report runs to day 90 = "today"):
+        //   days  0..6  : 72  (the plateau the 12-week change looks back to)
+        //   days  7..83 : 80  (a heavier middle stretch that inflates long trailing averages)
+        //   days 84..90 : 70  (the recent 7-day plateau = "today")
+        //
+        // Both the recent and the 12-weeks-ago plateaus are flat for a full 7 days, so each
+        // 7-day average equals its plateau value exactly, giving round expected numbers.
+        var firstDate = new DateTime(2023, 1, 1);
+
+        decimal WeightForDay(int day) => day switch
+        {
+            <= 6 => 72m,
+            <= 83 => 80m,
+            _ => 70m
+        };
+
+        var weights = Enumerable.Range(0, 91)
+            .Select(day => new WeightEntity(Guid.NewGuid(), "user", firstDate.AddDays(day), WeightForDay(day), false))
+            .ToList();
+
+        var report = _reportHandler.GetReport(weights, 170);
+
+        var today = report.Entries.Single(e => e.Date == DateOnly.FromDateTime(firstDate.AddDays(90)));
+
+        using var _ = new AssertionScope();
+
+        // Today's 7-day average is 70. Looking back: 1/2/4 weeks ago sits in the 80 stretch,
+        // and 12 weeks ago sits in the 72 plateau.
+        today.AverageWeight.Should().Be(70m);
+        today.OneWeekChange.Should().Be(-10m);    // 70 − 80
+        today.TwoWeekChange.Should().Be(-10m);    // 70 − 80
+        today.FourWeekChange.Should().Be(-10m);   // 70 − 80
+        today.TwelveWeekChange.Should().Be(-2m);  // 70 − 72, i.e. lighter now, so negative
+    }
+
+    [Fact]
     public void HandleShouldReturnCalculateBmi()
     {
         var firstDate = new DateTime(2023, 10, 1);
