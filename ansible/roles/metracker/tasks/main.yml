@@ -109,3 +109,8 @@
   retries: 10
   delay: 3
   until: metracker_health.status == 200
+
+# --- Public exposure (Tailscale Funnel) -------------------------------------
+# Kept in its own file so the whole block is copyable to the Frigate repo.
+- name: Expose the API over the internet via Tailscale Funnel
+  ansible.builtin.import_tasks: tailscale.yml

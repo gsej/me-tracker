@@ -20,6 +20,11 @@ datastore_id         = "local-lvm"
 storage_datastore_id = "local-lvm"
 data_size_gb         = 1
 
+# LXC OS hostname. Defaults to "me-tracker" (variables.tf). Override per
+# deployment if that name is taken — keep it aligned with the Tailscale node
+# name set in ansible/inventory.ini (metracker_ts_hostname). Example:
+# hostname = "me-tracker-t14"
+
 # --- Networking (static so the Ansible inventory points at a known address) ---
 container_ip_cidr = "192.168.1.132/24"
 container_gateway = "192.168.1.1"

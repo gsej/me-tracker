@@ -19,10 +19,11 @@ resource "proxmox_virtual_environment_container" "metracker" {
   node_name = var.proxmox_node
   vm_id     = var.container_id
 
-  # Unprivileged: this is an internet-facing service (via Tailscale Funnel in
-  # phase 2) and needs no device passthrough, so the stronger isolation of an
-  # unprivileged container is the right call. nesting + keyctl are still needed
-  # for Docker-in-LXC (both require root@pam auth — see providers.tf).
+  # Unprivileged: this is an internet-facing service (Tailscale Funnel, set up
+  # by Ansible in userspace-networking mode so no /dev/net/tun is needed) and it
+  # needs no device passthrough, so the stronger isolation of an unprivileged
+  # container is the right call. nesting + keyctl are still needed for
+  # Docker-in-LXC (both require root@pam auth — see providers.tf).
   unprivileged = true
 
   features {
