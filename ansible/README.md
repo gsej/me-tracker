@@ -9,8 +9,9 @@ Docker, clones the repo, and builds/starts the API from
 ```
 ansible/
 ├── ansible.cfg              # connects as root, uses inventory.ini
-├── inventory.ini           # the one container (set its IP here)
+├── inventory.ini           # the one container (set its IP + ts hostname here)
 ├── requirements.yml        # community.docker collection
+├── secrets/                # control-machine secrets (gitignored) + sample templates
 ├── site.yml                # top-level playbook → runs the metracker role
 └── roles/metracker/
     ├── defaults/main.yml   # repo URL, paths, .env + Tailscale secret sources
@@ -41,9 +42,9 @@ ansible-playbook site.yml
 The playbook:
 1. installs Docker,
 2. clones the public `me-tracker` repo to `/opt/me-tracker`,
-3. copies `.env` from `../../me-tracker-private/.env` to
-   `/opt/me-tracker-data/.env` (the DB is **not** copied — the app creates an
-   empty one; restore real data via the API out-of-band),
+3. copies `.env` from `secrets/.env` to `/opt/me-tracker-data/.env` (the DB is
+   **not** copied — the app creates an empty one; restore real data via the API
+   out-of-band),
 4. builds and starts the API, then waits for `/api/healthz`,
 5. installs Tailscale and exposes the API over public HTTPS via Funnel
    (phase 2 — see below).
@@ -82,15 +83,28 @@ tailnet. In the [admin console](https://login.tailscale.com/admin):
    scope `auth_keys` → **Write** only (not "All"), tag `tag:metracker`. Copy the
    one-time secret.
 
-### Secret
+### Secrets
 
-Put the OAuth client secret in the sibling private repo (never committed), as a
-single line, matching `metracker_ts_oauth_src` in `defaults/main.yml`:
+Deploy secrets live in `ansible/secrets/` on the control machine. The real files
+are **gitignored** (never committed to this public repo); the sample templates
+and the **public** key are tracked. Restore/copy each from your password manager:
 
-```sh
-# me-tracker-private/tailscale-oauth.env
-TS_OAUTH_SECRET=tskey-client-xxxxxxxx
-```
+- `env.sample` → `secrets/.env` — API keys (`ApiKeys=...`), delivered to the box
+  as `/opt/me-tracker-data/.env`.
+- `tailscale-oauth.env.example` → `secrets/tailscale-oauth.env` — the Tailscale
+  OAuth client secret, one line:
+  ```sh
+  TS_OAUTH_SECRET=tskey-client-xxxxxxxx
+  ```
+- `secrets/deploy_key` (+ committed `secrets/deploy_key.pub`) — the SSH deploy
+  key. Terraform injects the public key into the container; Ansible connects with
+  the private key. Restore the private key from your password manager and
+  `chmod 600` it.
+
+The `.env`/OAuth source paths are `metracker_env_src` / `metracker_ts_oauth_src`
+in `defaults/main.yml`; the key is referenced by `inventory.ini` (private) and
+`infra/*-terraform.tfvars` (public). The playbook checks `.env` and the OAuth
+secret exist up front and fails with a clear message if one is missing.
 
 ### Notes
 

@@ -9,7 +9,7 @@
 #   - policy: tagOwners + a nodeAttrs `funnel` grant for tag:metracker
 #   - HTTPS enabled (DNS settings)
 #   - an OAuth client (auth_keys: write, tagged tag:metracker); its secret lives
-#     in me-tracker-private/tailscale-oauth.env as TS_OAUTH_SECRET=...
+#     in ansible/secrets/tailscale-oauth.env as TS_OAUTH_SECRET=...
 
 # --- Install (official apt repo, keyring pattern mirrors the Docker tasks) ---
 

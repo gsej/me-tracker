@@ -1,4 +1,28 @@
 ---
+# --- Pre-flight: deploy secrets must exist on the control machine -----------
+# Both files are gitignored; a missing one would otherwise fail later with a
+# cryptic "copy: could not find src". Check up front with a clear message.
+- name: Check the deploy secret files exist (control machine)
+  ansible.builtin.stat:
+    path: "{{ item }}"
+  loop:
+    - "{{ metracker_env_src }}"
+    - "{{ metracker_ts_oauth_src }}"
+  delegate_to: localhost
+  register: metracker_secret_stat
+
+- name: Fail with guidance if a secret file is missing
+  ansible.builtin.assert:
+    that: item.stat.exists
+    fail_msg: >-
+      Missing secret file: {{ item.item }}. Copy the matching sample in
+      ansible/secrets/ (e.g. env.sample -> .env) and fill in the real values
+      from your password manager.
+    quiet: true
+  loop: "{{ metracker_secret_stat.results }}"
+  loop_control:
+    label: "{{ item.item }}"
+
 # --- Docker install (official apt repo) -------------------------------------
 
 - name: Install prerequisite packages

@@ -10,15 +10,16 @@ metracker_data_dir: /opt/me-tracker-data
 # The standalone deployment compose (committed in the repo).
 metracker_compose_file: docker-compose.proxmox.yml
 
-# Source of the secret .env on the CONTROL machine. Defaults to the sibling
-# me-tracker-private repo (never committed to this public repo). The DB is NOT
-# copied — the app creates an empty one, real data is restored out-of-band.
-metracker_env_src: "{{ playbook_dir }}/../../me-tracker-private/.env"
+# Source of the secret .env on the CONTROL machine: ansible/secrets/.env
+# (gitignored — copy env.sample there and fill it in). The DB is NOT copied —
+# the app creates an empty one, real data is restored out-of-band.
+metracker_env_src: "{{ playbook_dir }}/secrets/.env"
 
 # --- Tailscale (phase 2: public exposure via Funnel) ------------------------
 # OAuth client secret (auth_keys scope, tagged tag:metracker) on the CONTROL
-# machine — sibling private repo, same pattern as the .env above.
-metracker_ts_oauth_src: "{{ playbook_dir }}/../../me-tracker-private/tailscale-oauth.env"
+# machine: ansible/secrets/tailscale-oauth.env (gitignored), same pattern as the
+# .env above.
+metracker_ts_oauth_src: "{{ playbook_dir }}/secrets/tailscale-oauth.env"
 # MagicDNS hostname for the node. The public URL becomes
 # https://{{ metracker_ts_hostname }}.<tailnet>.ts.net
 metracker_ts_hostname: me-tracker

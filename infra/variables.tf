@@ -119,9 +119,9 @@ variable "network_bridge" {
 # ---- Access ----------------------------------------------------------------
 
 variable "ssh_public_key_path" {
-  description = "Public key injected into the container's root account (Ansible connects with the matching private key)"
+  description = "Public key injected into the container's root account (Ansible connects with the matching private key). Relative paths resolve from the infra/ working dir."
   type        = string
-  default     = "~/.ssh/deploy/me-tracker.pub"
+  default     = "../ansible/secrets/deploy_key.pub"
 }
 
 variable "container_root_password" {
