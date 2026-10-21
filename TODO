@@ -5,3 +5,8 @@
   at startup, so the app issues two `GET /api/report` calls on load. Harmless but
   wasteful. Simplest fix is an in-flight guard in the service (skip if a request
   is already running). See weight-chart-plan.md.
+
+
+- review create-tables.sql script and remove if uneeded
+
+- We use `Note` in some places and `Comment` in others. Standardise on `Note` 
