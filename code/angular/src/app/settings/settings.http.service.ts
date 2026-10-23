@@ -21,7 +21,11 @@ export class SettingsHttpService {
   initializeApp(): Promise<void> {
     // Reject (rather than hang) if settings.json is missing: apiUrl lives there, so the app
     // cannot function without it. main.ts catches this and shows a message instead of a blank page.
-    return firstValueFrom(this.http.get<Settings>('settings.json'))
+    //
+    // Cache-bust: GitHub Pages serves settings.json with max-age=600, so without this a reload
+    // can show config (apiUrl/gitHash) up to ~10 min stale. A unique query param forces a fresh
+    // fetch on every app start, so a manual reload always reflects the latest deploy.
+    return firstValueFrom(this.http.get<Settings>(`settings.json?t=${Date.now()}`))
       .then(settings => { this.settingsService.settings = settings; })
       .catch(reason => { throw new SettingsLoadError(reason); });
   }
