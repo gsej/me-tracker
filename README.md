@@ -8,11 +8,11 @@ A personal weight tracking app with an Angular frontend and a .NET backend API.
 |-----------|-----------|----------|
 | Frontend | Angular (PWA) | `code/angular/` |
 | Backend API | .NET 10 (ASP.NET Core) | `code/dotnet/Api/` |
-| Database | SQLite | mounted from a private directory outside the repo |
+| Database | SQLite | on a persistent mount on the server (`/opt/me-tracker-data`) |
 
-The frontend is a static Angular app hosted on GitHub Pages. It communicates with a backend API running on a home server.
+The frontend is a static Angular app hosted on GitHub Pages. It communicates with a backend API running on a Proxmox LXC.
 
-The backend runs in a Docker container. It reads and writes a SQLite database file that lives outside the repo in a private directory, which also holds secrets via a `.env` file.
+The backend runs in a Docker container on the LXC. It reads and writes a SQLite database file on a persistent host mount (`/opt/me-tracker-data/database`); the matching `.env` with secrets is delivered to the same location by Ansible.
 
 ## Deployment
 
@@ -24,17 +24,16 @@ The workflow builds the Angular app and deploys the static files to **GitHub Pag
 
 ### Backend
 
-Deployed on the home server:
+Deployed to a Proxmox LXC via infrastructure-as-code:
 
-```bash
-git pull
-./start.sh
-```
+- **Terraform** (`infra/`) builds the LXC.
+- **Ansible** (`ansible/`) configures it — installs Docker, clones the repo, delivers
+  the `.env`, and builds/starts the API from `docker-compose.yml`. See
+  `ansible/README.md` for the full run steps.
 
-- **`start.sh`** — builds the image and starts the container. Use for a cold start.
-- **`restart.sh`** — stops the running container, then rebuilds and restarts it.
-
-`docker-compose.yml` builds the image from `code/dotnet/Api/Dockerfile` and starts the container on port 5200, with the database volume and secrets mounted from the private directory.
+`docker-compose.yml` builds the image from `code/dotnet/Api/Dockerfile` and
+starts the container on port 5200, with the database volume and secrets at
+`/opt/me-tracker-data` (provisioned by Terraform, populated by Ansible).
 
 #### Verifying the running build
 

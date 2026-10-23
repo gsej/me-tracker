@@ -2,7 +2,7 @@
 
 Terraform (`../infra`) builds the LXC; this playbook configures it: installs
 Docker, clones the repo, and builds/starts the API from
-`docker-compose.proxmox.yml`.
+`docker-compose.yml`.
 
 ## Structure
 

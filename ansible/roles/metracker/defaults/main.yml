@@ -8,7 +8,7 @@ metracker_dir: /opt/me-tracker
 metracker_data_dir: /opt/me-tracker-data
 
 # The standalone deployment compose (committed in the repo).
-metracker_compose_file: docker-compose.proxmox.yml
+metracker_compose_file: docker-compose.yml
 
 # Source of the secret .env on the CONTROL machine: ansible/secrets/.env
 # (gitignored — copy env.sample there and fill it in). The DB is NOT copied —
