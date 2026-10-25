@@ -8,8 +8,9 @@ Docker, clones the repo, and builds/starts the API from
 
 ```
 ansible/
-├── ansible.cfg              # connects as root, uses inventory.ini
-├── inventory.ini           # the one container (set its IP + ts hostname here)
+├── ansible.cfg              # connects as root; no default inventory (pass -i)
+├── t14-inventory.ini        # T14 container (.132, ts node me-tracker-t14)
+├── m900-inventory.ini       # M900 container (.221, ts node me-tracker-m900)
 ├── requirements.yml        # community.docker collection
 ├── secrets/                # control-machine secrets (gitignored) + sample templates
 ├── site.yml                # top-level playbook → runs the metracker role
@@ -31,12 +32,15 @@ sudo pacman -Syu ansible
 
 ## Run it
 
+Each environment has its own committed inventory file (`t14-inventory.ini`,
+`m900-inventory.ini`) — the non-secret parallel to the per-env `tfvars`. No
+inventory is auto-loaded, so pass one with `-i`. Examples use M900; swap in
+`t14-inventory.ini` for the T14 box.
+
 ```sh
 cd ansible
-# point inventory.ini at the container IP (from `terraform output`)
-
-ansible metracker -m ping            # connectivity check
-ansible-playbook site.yml
+ansible -i m900-inventory.ini metracker -m ping     # connectivity check
+ansible-playbook -i m900-inventory.ini site.yml
 ```
 
 The playbook:
@@ -102,8 +106,8 @@ and the **public** key are tracked. Restore/copy each from your password manager
   `chmod 600` it.
 
 The `.env`/OAuth source paths are `metracker_env_src` / `metracker_ts_oauth_src`
-in `defaults/main.yml`; the key is referenced by `inventory.ini` (private) and
-`infra/*-terraform.tfvars` (public). The playbook checks `.env` and the OAuth
+in `defaults/main.yml`; the key is referenced by `<env>-inventory.ini` (public)
+and `infra/*-terraform.tfvars` (public). The playbook checks `.env` and the OAuth
 secret exist up front and fails with a clear message if one is missing.
 
 ### Notes
