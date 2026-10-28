@@ -146,8 +146,32 @@ export class WeightChartComponent implements OnInit, AfterViewInit, OnDestroy {
           points: { show: false },
         },
       ],
-      axes: [{}, { label: 'kg' }],
+      axes: [{ values: this.ukTimeAxisValues() }, { label: 'kg' }],
     };
+  }
+
+  /**
+   * uPlot's default time-axis format tiers, but with day/month flipped to UK
+   * order ({D}/{M} instead of {M}/{D}). uPlot picks a tier from how much width
+   * is available, so without this the ticks silently switch to US-style
+   * {M}/{D} when the chart is wide (e.g. landscape). Scale is in seconds.
+   */
+  private ukTimeAxisValues(): uPlot.Axis.Values {
+    const s = 1;
+    const m = s * 60;
+    const h = m * 60;
+    const d = h * 24;
+    const y = d * 365;
+    const _ = null;
+    // [incr, default, year, month, day, hour, min, sec, mode]
+    return [
+      [y,      '{YYYY}',        _,                             _, _,                        _, _,            _, 1],
+      [d * 28, '{MMM}',         '\n{YYYY}',                    _, _,                        _, _,            _, 1],
+      [d,      '{D}/{M}',       '\n{YYYY}',                    _, _,                        _, _,            _, 1],
+      [h,      '{h}{aa}',       '\n{D}/{M}/{YY}',              _, '\n{D}/{M}',              _, _,            _, 1],
+      [m,      '{h}:{mm}{aa}',  '\n{D}/{M}/{YY}',              _, '\n{D}/{M}',              _, _,            _, 1],
+      [s,      ':{ss}',         '\n{D}/{M}/{YY} {h}:{mm}{aa}', _, '\n{D}/{M} {h}:{mm}{aa}', _, '\n{h}:{mm}{aa}', _, 1],
+    ];
   }
 
   private setupResizeObserver(): void {
