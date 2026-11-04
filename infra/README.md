@@ -34,6 +34,12 @@ Terraform workspaces (see below).
    ```
    (If you regenerate, commit the new `deploy_key.pub`.)
 
+## Root access
+
+Containers have no usable root password. Use the deploy key over SSH, or run
+`pct enter <vmid>` from the Proxmox host's shell. The Console tab in the Proxmox
+web UI will show a login prompt that can't be used.
+
 ## Environments, variables & state
 
 The deployment target is the **M900** Proxmox host. Config is split so secrets
@@ -41,19 +47,14 @@ never get committed:
 
 - `m900-terraform.tfvars` — **committed**, non-secret config (endpoint, node,
   networking, hostname, …).
-- `m900-secrets.tfvars` — **gitignored** (`infra/*-secrets.tfvars`): the container
-  root password; keep it in your password manager. Copy `secrets.tfvars.example`.
-  Don't add `proxmox_password` here: a value in a var file overrides the
-  environment variable.
 - State is kept in the `m900` **Terraform workspace**, under
   `terraform.tfstate.d/m900/`.
 
-Neither var file is auto-loaded (they aren't named `terraform.tfvars`), so they're
-passed explicitly. The wrapper scripts do that *and* select the workspace:
+The var file isn't auto-loaded (it isn't named `terraform.tfvars`), so it's passed
+explicitly. The wrapper scripts do that *and* select the workspace:
 
 ```sh
 cd infra
-cp secrets.tfvars.example m900-secrets.tfvars   # then fill in from your password manager
 terraform init
 ./plan-m900.sh
 ./apply-m900.sh
