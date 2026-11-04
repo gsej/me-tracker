@@ -20,6 +20,8 @@ data_size_gb         = 1
 # left unclaimed for now.
 hostname = "me-tracker-m900"
 
+container_id = 101
+
 # --- Networking (static so the Ansible inventory points at a known address) ---
 # .221 is the M900 me-tracker LXC in the .220–.229 Proxmox/IaC block (see the
 # ubiquiti-network repo's ip-allocation.md); .220 is the M900 Frigate LXC.
