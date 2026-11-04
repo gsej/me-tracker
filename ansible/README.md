@@ -9,7 +9,6 @@ Docker, clones the repo, and builds/starts the API from
 ```
 ansible/
 ├── ansible.cfg              # connects as root; no default inventory (pass -i)
-├── t14-inventory.ini        # T14 container (.132, ts node me-tracker-t14)
 ├── m900-inventory.ini       # M900 container (.221, ts node me-tracker-m900)
 ├── requirements.yml        # community.docker collection
 ├── secrets/                # control-machine secrets (gitignored) + sample templates
@@ -32,10 +31,8 @@ sudo pacman -Syu ansible
 
 ## Run it
 
-Each environment has its own committed inventory file (`t14-inventory.ini`,
-`m900-inventory.ini`) — the non-secret parallel to the per-env `tfvars`. No
-inventory is auto-loaded, so pass one with `-i`. Examples use M900; swap in
-`t14-inventory.ini` for the T14 box.
+The committed inventory file is `m900-inventory.ini`, the non-secret parallel to
+`m900-terraform.tfvars`. No inventory is auto-loaded, so pass it with `-i`.
 
 ```sh
 cd ansible
