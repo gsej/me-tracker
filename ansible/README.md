@@ -57,7 +57,7 @@ The playbook:
 ## Data & restore
 
 The SQLite DB lives on a dedicated Terraform mount at
-`/opt/me-tracker-data/database`, so it survives container rebuilds. After first
+`/opt/me-tracker-data/database`, so it survives Docker container rebuilds, but not destroying or replacing the LXC. After first
 deploy it's empty — restore a recent backup via the API restore endpoint.
 
 ## Public exposure (phase 2 — Tailscale Funnel)
