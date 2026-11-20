@@ -20,7 +20,7 @@ The backend runs in a Docker container on the LXC. It reads and writes a SQLite 
 
 Deployed via a GitHub Actions workflow (`.github/workflows/webui-prod.yml`), triggered with **workflow_dispatch** from the GitHub Actions UI.
 
-The workflow builds the Angular app and deploys the static files to **GitHub Pages**. The production API URL is injected at build time via the `API_URL` environment variable into `settings.json` (which points to `localhost:5200` in source control for local development).
+The workflow builds the Angular app and deploys the static files to **GitHub Pages**. The production API URL (the workflow's `API_URL` environment variable) and the commit hash are passed to `ng build --define` and baked into the bundle; without them, as in local development, the app uses `http://localhost:5200` and shows `ui: local`.
 
 ### Backend
 
