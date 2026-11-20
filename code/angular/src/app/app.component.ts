@@ -12,6 +12,7 @@ import { ReactiveFormsModule } from '@angular/forms';
 import { SettingsService } from './settings/settings.service';
 import { HealthService } from './services/health.service';
 import { PiComponent } from './components/pi/pi.component';
+import { UpdateBannerComponent } from './components/update-banner/update-banner.component';
 import { ApiKeyInputComponent } from './components/api-key-input/api-key-input.component';
 import { Page1Component } from './components/page-1/page-1.component';
 import { Page2Component } from './components/page-2/page-2.component';
@@ -28,6 +29,7 @@ import { Page4Component } from './components/page-4/page-4.component';
     Page4Component,
     PiComponent,
     ApiKeyInputComponent,
+    UpdateBannerComponent,
   ],
   templateUrl: './app.component.html',
   changeDetection: ChangeDetectionStrategy.Eager,
