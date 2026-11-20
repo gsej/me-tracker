@@ -10,3 +10,8 @@
 - review create-tables.sql script and remove if uneeded
 
 - We use `Note` in some places and `Comment` in others. Standardise on `Note` 
+
+- DONE: the web UI deploys automatically on pushes to master that touch `code/angular/**`
+  or the workflow. settings.json is gone: the UI git hash and API URL are build-time
+  constants (`ng build --define`). An update banner offers "Reload" when the service
+  worker has a new version ready (AppUpdateService).
