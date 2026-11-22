@@ -13,7 +13,6 @@ import { SettingsService } from './settings/settings.service';
 import { HealthService } from './services/health.service';
 import { PiComponent } from './components/pi/pi.component';
 import { UpdateBannerComponent } from './components/update-banner/update-banner.component';
-import { ApiKeyInputComponent } from './components/api-key-input/api-key-input.component';
 import { Page1Component } from './components/page-1/page-1.component';
 import { Page2Component } from './components/page-2/page-2.component';
 import { Page3Component } from './components/page-3/page-3.component';
@@ -28,7 +27,6 @@ import { Page4Component } from './components/page-4/page-4.component';
     Page3Component,
     Page4Component,
     PiComponent,
-    ApiKeyInputComponent,
     UpdateBannerComponent,
   ],
   templateUrl: './app.component.html',
@@ -40,10 +38,6 @@ export class AppComponent implements AfterViewInit {
   public gitHash: string = 'not set';
   public apiGitHash: string = '…';
 
-  get hashText(): string {
-    return `ui: ${this.gitHash}, api: ${this.apiGitHash}`;
-  }
-
   currentPage: number = 0;
   totalPages: number = 4;
   startX: number = 0;
@@ -52,6 +46,10 @@ export class AppComponent implements AfterViewInit {
   // While it still has room to scroll in the swipe direction we let it scroll instead of
   // changing page, so e.g. scrolling the report table's columns no longer flips the page.
   private horizontalScroller: HTMLElement | null = null;
+
+  // True when the current touch began inside an element marked [data-no-page-swipe] (e.g. the
+  // settings modal). Such touches never change page.
+  private swipeDisabled = false;
 
   isInitialLoad: boolean = true;
 
@@ -101,9 +99,14 @@ export class AppComponent implements AfterViewInit {
     this.horizontalScroller = this.findHorizontalScroller(
       event.target as HTMLElement | null,
     );
+    const target = event.target as Element | null;
+    this.swipeDisabled = target?.closest('[data-no-page-swipe]') != null;
   }
 
   onTouchMove(event: TouchEvent) {
+    if (this.swipeDisabled) {
+      return;
+    }
     const currentX = event.touches[0].clientX;
     const diff = this.startX - currentX;
 
