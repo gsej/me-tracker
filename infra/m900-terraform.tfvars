@@ -14,10 +14,8 @@ datastore_id         = "local-lvm"
 storage_datastore_id = "local-lvm"
 data_size_gb         = 1
 
-# LXC OS hostname. Overridden to a box-specific name (default is "me-tracker")
-# so it aligns with the Tailscale node name set in the Ansible inventory
-# (metracker_ts_hostname=me-tracker-m900). The canonical "me-tracker" name is
-# left unclaimed for now.
+# LXC OS hostname. Set to a box-specific name (default is "me-tracker"), using
+# the `-m900` per-host naming convention.
 hostname = "me-tracker-m900"
 
 container_id = 101
