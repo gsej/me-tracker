@@ -14,11 +14,18 @@ public class ReportHandler
     public WeightReport GetReport(IEnumerable<WeightEntity> records, int heightInCm)
     {
         // stage 1, reduce the records to a single entry for each date, averaging the weights
+        // and collecting that day's non-empty comments (in time order).
         var stage1Entries = records
             .GroupBy(record => DateOnly.FromDateTime(record.Date))
             .Select(group => new Stage1ReportEntry(
                 group.Key,
-                group.Average(record => record.Weight)))
+                group.Average(record => record.Weight),
+                group
+                    .OrderBy(record => record.Date)
+                    .Select(record => record.Comment)
+                    .Where(comment => !string.IsNullOrWhiteSpace(comment))
+                    .Select(comment => comment!)
+                    .ToList()))
             .OrderBy(record => record.Date)
             .ToList();
 
@@ -80,7 +87,8 @@ public class ReportHandler
                 oneWeekChange,
                 twoWeekChange,
                 fourWeekChange,
-                twelveWeekChange
+                twelveWeekChange,
+                stage1Entries.SingleOrDefault(e => e.Date == date)?.Comments ?? []
                 );
             stage2Entries.Add(entry);
         }

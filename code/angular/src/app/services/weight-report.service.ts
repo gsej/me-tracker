@@ -12,6 +12,8 @@ export interface WeightReportEntry {
   twoWeekChange: number;
   fourWeekChange: number;
   twelveWeekChange: number;
+  /** Comments from that day's weighings (empty if none). */
+  comments: string[];
 }
 
 export interface WeightReport {

@@ -28,5 +28,22 @@
   </div>
 }
 
-<!-- Swipes on the chart pan it rather than changing page. -->
-<div #chartContainer data-no-page-swipe class="w-full flex-1 min-h-0"></div>
+@let commentPopup = popup();
+
+<div #chartWrapper class="relative w-full flex-1 min-h-0 flex flex-col">
+  <div #chartContainer class="w-full flex-1 min-h-0"></div>
+
+  @if (commentPopup) {
+    <div
+      class="comment-popup absolute z-10 bg-white border border-amber-400 rounded shadow-md px-3 py-2 text-sm"
+      [style.top.px]="commentPopup.top"
+      [style.left.px]="commentPopup.left"
+      [style.right.px]="commentPopup.right"
+    >
+      <p class="font-semibold text-amber-600">{{ commentPopup.date }}</p>
+      @for (comment of commentPopup.comments; track $index) {
+        <p class="text-gray-700 whitespace-pre-wrap break-words">{{ comment }}</p>
+      }
+    </div>
+  }
+</div>

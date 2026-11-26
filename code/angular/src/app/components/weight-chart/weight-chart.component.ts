@@ -8,11 +8,37 @@ import {
   ElementRef,
   Input,
   inject,
+  signal,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Subscription } from 'rxjs';
 import uPlot from 'uplot';
 import { WeightReportService, WeightReport } from '../../services/weight-report.service';
+
+/** A day with comments, drawn as a marker line on the chart. */
+interface CommentMarker {
+  /** Unix seconds, matching the chart's x values. */
+  x: number;
+  date: string;
+  comments: string[];
+}
+
+/** The comment popup, positioned within the chart wrapper (CSS px). */
+export interface CommentPopup {
+  top: number;
+  /** Set when the popup sits to the right of its marker... */
+  left: number | null;
+  /** ...or this when it sits to the left (markers in the right half). */
+  right: number | null;
+  date: string;
+  comments: string[];
+}
+
+const MARKER_COLOUR = '#f59e0b';
+/** How close (CSS px) a tap or hover must be to a marker line to pick it. */
+const MARKER_HIT_PX = 16;
+/** Pointer movement (CSS px) beyond which a press is a drag, not a tap. */
+const TAP_SLOP_PX = 5;
 
 /** How far back (from the latest entry) to show; `null` means all data. */
 export type ChartRange = { days: number } | { months: number } | null;
@@ -32,6 +58,13 @@ export class WeightChartComponent implements OnInit, AfterViewInit, OnDestroy {
   readonly weightReport$ = this.weightReportService.weightReport$;
 
   @ViewChild('chartContainer') private chartContainer?: ElementRef<HTMLDivElement>;
+  @ViewChild('chartWrapper') private chartWrapper?: ElementRef<HTMLDivElement>;
+
+  /** The comment popup currently shown, if any. */
+  readonly popup = signal<CommentPopup | null>(null);
+  private markers: CommentMarker[] = [];
+  /** Set from pointerdown until the pointer moves too far to count as a tap. */
+  private tap?: { pointerId: number; x: number; y: number };
 
   private chart?: uPlot;
   private resizeObserver?: ResizeObserver;
@@ -78,8 +111,11 @@ export class WeightChartComponent implements OnInit, AfterViewInit, OnDestroy {
   /** Rebuild the data, reset the window to end at the latest entry, and repaint. */
   private rebuild(): void {
     this.data = this.toChartData(this.report);
+    this.markers = this.toMarkers(this.report);
     this.window = this.initialWindow();
     this.drag = undefined;
+    this.tap = undefined;
+    this.popup.set(null);
     this.renderChart();
   }
 
@@ -94,6 +130,113 @@ export class WeightChartComponent implements OnInit, AfterViewInit, OnDestroy {
     const xs = sorted.map((e) => Math.floor(new Date(e.date).getTime() / 1000));
     const ys = sorted.map((e) => e.averageWeight);
     return [xs, ys];
+  }
+
+  /** One marker per day that has comments, x matching the chart's x values. */
+  private toMarkers(report: WeightReport | null): CommentMarker[] {
+    if (!report) {
+      return [];
+    }
+    return report.entries
+      .filter((e) => e.comments?.length > 0)
+      .map((e) => ({
+        x: Math.floor(new Date(e.date).getTime() / 1000),
+        date: e.date,
+        comments: e.comments,
+      }))
+      .sort((a, b) => a.x - b.x);
+  }
+
+  /** Draw a dashed line, with a dot at the top, for each day with comments. */
+  private drawMarkers(u: uPlot): void {
+    if (this.markers.length === 0) {
+      return;
+    }
+    const pxr = window.devicePixelRatio || 1;
+    const { left, top, width, height } = u.bbox; // canvas px
+    const ctx = u.ctx;
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(left, top, width, height);
+    ctx.clip();
+    ctx.strokeStyle = MARKER_COLOUR;
+    ctx.fillStyle = MARKER_COLOUR;
+    ctx.lineWidth = pxr;
+    ctx.setLineDash([4 * pxr, 3 * pxr]);
+    const dotRadius = 4 * pxr;
+    for (const m of this.markers) {
+      const x = Math.round(u.valToPos(m.x, 'x', true));
+      if (x < left || x > left + width) {
+        continue;
+      }
+      ctx.beginPath();
+      ctx.moveTo(x, top + dotRadius * 2);
+      ctx.lineTo(x, top + height);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.arc(x, top + dotRadius + pxr, dotRadius, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.restore();
+  }
+
+  /** The marker nearest a client x position, if within MARKER_HIT_PX of it. */
+  private markerNear(clientX: number): CommentMarker | undefined {
+    const chart = this.chart;
+    if (!chart || this.markers.length === 0) {
+      return undefined;
+    }
+    const plotX = clientX - chart.over.getBoundingClientRect().left;
+    let best: CommentMarker | undefined;
+    let bestDist = MARKER_HIT_PX;
+    for (const m of this.markers) {
+      const pos = chart.valToPos(m.x, 'x');
+      if (pos < 0 || pos > chart.over.clientWidth) {
+        continue;
+      }
+      const dist = Math.abs(pos - plotX);
+      if (dist <= bestDist) {
+        best = m;
+        bestDist = dist;
+      }
+    }
+    return best;
+  }
+
+  /** Show the popup for a marker, beside its line and kept inside the chart. */
+  private showPopup(marker: CommentMarker): void {
+    const chart = this.chart;
+    const wrapper = this.chartWrapper?.nativeElement;
+    if (!chart || !wrapper) {
+      return;
+    }
+    const wrapperRect = wrapper.getBoundingClientRect();
+    const overRect = chart.over.getBoundingClientRect();
+    const markerX = overRect.left - wrapperRect.left + chart.valToPos(marker.x, 'x');
+    const top = overRect.top - wrapperRect.top + 14;
+    const inLeftHalf = markerX < wrapperRect.width / 2;
+    this.popup.set({
+      top,
+      left: inLeftHalf ? markerX + 8 : null,
+      right: inLeftHalf ? null : wrapperRect.width - markerX + 8,
+      date: new Date(marker.date).toLocaleDateString('en-GB', {
+        weekday: 'short',
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric',
+      }),
+      comments: marker.comments,
+    });
+  }
+
+  /** Show the popup for the marker near clientX, or hide it if there's none. */
+  private updatePopupAt(clientX: number): void {
+    const marker = this.markerNear(clientX);
+    if (marker) {
+      this.showPopup(marker);
+    } else {
+      this.popup.set(null);
+    }
   }
 
   /** First and last x values (unix seconds) of the data. */
@@ -151,9 +294,16 @@ export class WeightChartComponent implements OnInit, AfterViewInit, OnDestroy {
   private setupPanning(over: HTMLElement): void {
     // Let vertical scrolling through; horizontal drags come to us.
     over.style.touchAction = 'pan-y';
+    // Swipes on the plot pan it rather than changing page. Only the plot area is
+    // marked, so swipes on the axes, legend and padding still change page.
+    over.setAttribute('data-no-page-swipe', '');
 
     over.addEventListener('pointerdown', (e: PointerEvent) => {
-      if (!this.window || !this.canPan() || (e.pointerType === 'mouse' && e.button !== 0)) {
+      if (e.pointerType === 'mouse' && e.button !== 0) {
+        return;
+      }
+      this.tap = { pointerId: e.pointerId, x: e.clientX, y: e.clientY };
+      if (!this.window || !this.canPan()) {
         return;
       }
       this.drag = {
@@ -167,6 +317,19 @@ export class WeightChartComponent implements OnInit, AfterViewInit, OnDestroy {
     });
 
     over.addEventListener('pointermove', (e: PointerEvent) => {
+      const tap = this.tap;
+      if (
+        tap?.pointerId === e.pointerId &&
+        Math.hypot(e.clientX - tap.x, e.clientY - tap.y) > TAP_SLOP_PX
+      ) {
+        // It's a drag now, not a tap; get the popup out of the way while panning.
+        this.tap = undefined;
+        this.popup.set(null);
+      }
+      // Desktop hover (no button held): show the popup for a nearby marker.
+      if (e.pointerType === 'mouse' && !this.drag && !this.tap) {
+        this.updatePopupAt(e.clientX);
+      }
       const drag = this.drag;
       const extent = this.dataExtent();
       if (!drag || drag.pointerId !== e.pointerId || !extent || over.clientWidth === 0) {
@@ -188,8 +351,25 @@ export class WeightChartComponent implements OnInit, AfterViewInit, OnDestroy {
       this.drag = undefined;
       over.style.cursor = this.canPan() ? 'grab' : '';
     };
-    over.addEventListener('pointerup', endDrag);
-    over.addEventListener('pointercancel', endDrag);
+    over.addEventListener('pointerup', (e: PointerEvent) => {
+      // A tap (or click) opens the nearest marker's popup, or closes it.
+      if (this.tap?.pointerId === e.pointerId) {
+        this.tap = undefined;
+        this.updatePopupAt(e.clientX);
+      }
+      endDrag(e);
+    });
+    over.addEventListener('pointercancel', (e: PointerEvent) => {
+      if (this.tap?.pointerId === e.pointerId) {
+        this.tap = undefined;
+      }
+      endDrag(e);
+    });
+    over.addEventListener('pointerleave', (e: PointerEvent) => {
+      if (e.pointerType === 'mouse' && !this.drag) {
+        this.popup.set(null);
+      }
+    });
   }
 
   private renderChart(): void {
@@ -225,6 +405,7 @@ export class WeightChartComponent implements OnInit, AfterViewInit, OnDestroy {
       scales: { x: { time: true } },
       // No drag-to-zoom: dragging pans the window instead.
       cursor: { drag: { x: false, y: false, setScale: false } },
+      hooks: { draw: [(u) => this.drawMarkers(u)] },
       series: [
         {
           label: 'Date',
@@ -273,6 +454,7 @@ export class WeightChartComponent implements OnInit, AfterViewInit, OnDestroy {
     this.resizeObserver = new ResizeObserver(() => {
       if (this.chart) {
         this.chart.setSize(this.currentSize());
+        this.popup.set(null);
       }
     });
     this.resizeObserver.observe(this.chartContainer.nativeElement);

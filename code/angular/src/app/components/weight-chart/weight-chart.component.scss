@@ -4,3 +4,9 @@
   width: 100%;
   height: 100%;
 }
+
+.comment-popup {
+  max-width: min(16rem, 60%);
+  // Taps fall through to the chart, so tapping elsewhere (or the popup) closes it.
+  pointer-events: none;
+}

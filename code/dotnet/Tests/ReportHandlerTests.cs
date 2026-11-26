@@ -240,4 +240,29 @@ public class ReportHandlerTests
             entry.Bmi.Should().Be(expectedBmi);
         }
     }
+
+    [Fact]
+    public void HandleShouldCollectEachDaysCommentsOnItsEntry()
+    {
+        var date1 = new DateTime(2023, 10, 1, 8, 0, 0);
+        var date3 = new DateTime(2023, 10, 3, 8, 0, 0);
+
+        var weights = new List<WeightEntity>
+        {
+            new(Guid.NewGuid(), "user", date1, 70, false, "after holiday"),
+            new(Guid.NewGuid(), "user", date1.AddHours(12), 71, false, "evening"),
+            new(Guid.NewGuid(), "user", date1.AddHours(1), 70, false, "  "),
+            new(Guid.NewGuid(), "user", date3, 69, false)
+        };
+
+        var report = _reportHandler.GetReport(weights, 170);
+
+        using var _ = new AssertionScope();
+
+        report.Entries.Single(e => e.Date == new DateOnly(2023, 10, 1)).Comments
+            .Should().Equal("after holiday", "evening");
+        // A gap day (no weighing) and a weighing without a comment both have no comments.
+        report.Entries.Single(e => e.Date == new DateOnly(2023, 10, 2)).Comments.Should().BeEmpty();
+        report.Entries.Single(e => e.Date == new DateOnly(2023, 10, 3)).Comments.Should().BeEmpty();
+    }
 }
