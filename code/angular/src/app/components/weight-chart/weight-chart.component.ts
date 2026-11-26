@@ -14,6 +14,9 @@ import { Subscription } from 'rxjs';
 import uPlot from 'uplot';
 import { WeightReportService, WeightReport } from '../../services/weight-report.service';
 
+/** How far back (from the latest entry) to show; `null` means all data. */
+export type ChartRange = { days: number } | { months: number } | null;
+
 @Component({
   selector: 'app-weight-chart',
   imports: [CommonModule],
@@ -36,11 +39,11 @@ export class WeightChartComponent implements OnInit, AfterViewInit, OnDestroy {
   private viewReady = false;
   private data?: uPlot.AlignedData;
   private report: WeightReport | null = null;
-  private _rangeMonths: number | null = 3;
+  private _range: ChartRange = { months: 3 };
 
-  /** Number of months (from the latest entry) to show, or `null` for all data. */
-  @Input() set rangeMonths(value: number | null) {
-    this._rangeMonths = value;
+  /** How far back (from the latest entry) to show, or `null` for all data. */
+  @Input() set range(value: ChartRange) {
+    this._range = value;
     this.rebuild();
   }
 
@@ -92,16 +95,21 @@ export class WeightChartComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   /**
-   * Keep only entries within `rangeMonths` of the most recent entry (so the
+   * Keep only entries within `range` of the most recent entry (so the
    * default view always shows the latest data). `null` means "all data".
    */
   private filterByRange<T extends { date: string }>(sortedAsc: T[]): T[] {
-    if (this._rangeMonths == null || sortedAsc.length === 0) {
+    const range = this._range;
+    if (range == null || sortedAsc.length === 0) {
       return sortedAsc;
     }
     const latest = new Date(sortedAsc[sortedAsc.length - 1].date);
     const cutoff = new Date(latest);
-    cutoff.setMonth(cutoff.getMonth() - this._rangeMonths);
+    if ('days' in range) {
+      cutoff.setDate(cutoff.getDate() - range.days);
+    } else {
+      cutoff.setMonth(cutoff.getMonth() - range.months);
+    }
     return sortedAsc.filter((e) => new Date(e.date).getTime() >= cutoff.getTime());
   }
 

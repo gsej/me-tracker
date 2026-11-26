@@ -1,6 +1,6 @@
 import { Component, ChangeDetectionStrategy } from '@angular/core';
 
-import { WeightChartComponent } from '../weight-chart/weight-chart.component';
+import { WeightChartComponent, ChartRange } from '../weight-chart/weight-chart.component';
 
 @Component({
   selector: 'app-page-4',
@@ -10,11 +10,14 @@ import { WeightChartComponent } from '../weight-chart/weight-chart.component';
   styleUrls: ['./page-4.component.scss'],
 })
 export class Page4Component {
-  readonly rangeOptions: { label: string; months: number | null }[] = [
-    { label: '3M', months: 3 },
-    { label: '1Y', months: 12 },
-    { label: 'All', months: null },
+  readonly rangeOptions: { label: string; range: ChartRange }[] = [
+    { label: '1W', range: { days: 7 } },
+    { label: '1M', range: { months: 1 } },
+    { label: '3M', range: { months: 3 } },
+    { label: '1Y', range: { months: 12 } },
+    { label: 'All', range: null },
   ];
 
-  selectedRange: number | null = 3;
+  /** 3M is the default selection. */
+  selected = this.rangeOptions[2];
 }
