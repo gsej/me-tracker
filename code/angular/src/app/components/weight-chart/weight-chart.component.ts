@@ -40,6 +40,10 @@ export class WeightChartComponent implements OnInit, AfterViewInit, OnDestroy {
   private data?: uPlot.AlignedData;
   private report: WeightReport | null = null;
   private _range: ChartRange = { months: 3 };
+  /** The visible x window (unix seconds); panning slides it within the data. */
+  private window?: { min: number; max: number };
+  /** Set while a drag is in progress. */
+  private drag?: { pointerId: number; startX: number; min: number; max: number };
 
   /** How far back (from the latest entry) to show, or `null` for all data. */
   @Input() set range(value: ChartRange) {
@@ -71,9 +75,11 @@ export class WeightChartComponent implements OnInit, AfterViewInit, OnDestroy {
     this.weightReportService.loadWeightReport();
   }
 
-  /** Re-filter the current report for the selected range and repaint. */
+  /** Rebuild the data, reset the window to end at the latest entry, and repaint. */
   private rebuild(): void {
     this.data = this.toChartData(this.report);
+    this.window = this.initialWindow();
+    this.drag = undefined;
     this.renderChart();
   }
 
@@ -85,32 +91,105 @@ export class WeightChartComponent implements OnInit, AfterViewInit, OnDestroy {
     const sorted = [...report.entries].sort(
       (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
     );
-    const windowed = this.filterByRange(sorted);
-    if (windowed.length === 0) {
-      return undefined;
-    }
-    const xs = windowed.map((e) => Math.floor(new Date(e.date).getTime() / 1000));
-    const ys = windowed.map((e) => e.averageWeight);
+    const xs = sorted.map((e) => Math.floor(new Date(e.date).getTime() / 1000));
+    const ys = sorted.map((e) => e.averageWeight);
     return [xs, ys];
   }
 
-  /**
-   * Keep only entries within `range` of the most recent entry (so the
-   * default view always shows the latest data). `null` means "all data".
-   */
-  private filterByRange<T extends { date: string }>(sortedAsc: T[]): T[] {
-    const range = this._range;
-    if (range == null || sortedAsc.length === 0) {
-      return sortedAsc;
+  /** First and last x values (unix seconds) of the data. */
+  private dataExtent(): { first: number; last: number } | undefined {
+    const xs = this.data?.[0];
+    if (!xs || xs.length === 0) {
+      return undefined;
     }
-    const latest = new Date(sortedAsc[sortedAsc.length - 1].date);
-    const cutoff = new Date(latest);
+    return { first: xs[0], last: xs[xs.length - 1] };
+  }
+
+  /**
+   * The window for the selected range, ending at the most recent entry (so the
+   * default view always shows the latest data). `null` range means all data.
+   */
+  private initialWindow(): { min: number; max: number } | undefined {
+    const extent = this.dataExtent();
+    if (!extent) {
+      return undefined;
+    }
+    const range = this._range;
+    if (range == null) {
+      return { min: extent.first, max: extent.last };
+    }
+    const cutoff = new Date(extent.last * 1000);
     if ('days' in range) {
       cutoff.setDate(cutoff.getDate() - range.days);
     } else {
       cutoff.setMonth(cutoff.getMonth() - range.months);
     }
-    return sortedAsc.filter((e) => new Date(e.date).getTime() >= cutoff.getTime());
+    const min = Math.max(extent.first, Math.floor(cutoff.getTime() / 1000));
+    return { min, max: extent.last };
+  }
+
+  /** True when the window is narrower than the data, i.e. there's somewhere to pan to. */
+  private canPan(): boolean {
+    const extent = this.dataExtent();
+    return (
+      !!extent &&
+      !!this.window &&
+      this.window.max - this.window.min < extent.last - extent.first
+    );
+  }
+
+  private applyWindow(): void {
+    if (this.chart && this.window) {
+      this.chart.setScale('x', { min: this.window.min, max: this.window.max });
+    }
+    if (this.chart) {
+      this.chart.over.style.cursor = this.canPan() ? 'grab' : '';
+    }
+  }
+
+  /** Wire up drag-to-pan on uPlot's plot overlay (mouse and touch). */
+  private setupPanning(over: HTMLElement): void {
+    // Let vertical scrolling through; horizontal drags come to us.
+    over.style.touchAction = 'pan-y';
+
+    over.addEventListener('pointerdown', (e: PointerEvent) => {
+      if (!this.window || !this.canPan() || (e.pointerType === 'mouse' && e.button !== 0)) {
+        return;
+      }
+      this.drag = {
+        pointerId: e.pointerId,
+        startX: e.clientX,
+        min: this.window.min,
+        max: this.window.max,
+      };
+      over.setPointerCapture(e.pointerId);
+      over.style.cursor = 'grabbing';
+    });
+
+    over.addEventListener('pointermove', (e: PointerEvent) => {
+      const drag = this.drag;
+      const extent = this.dataExtent();
+      if (!drag || drag.pointerId !== e.pointerId || !extent || over.clientWidth === 0) {
+        return;
+      }
+      const span = drag.max - drag.min;
+      const secondsPerPx = span / over.clientWidth;
+      // Dragging right moves back in time (the line follows the finger).
+      let min = drag.min - (e.clientX - drag.startX) * secondsPerPx;
+      min = Math.min(Math.max(min, extent.first), extent.last - span);
+      this.window = { min, max: min + span };
+      this.chart?.setScale('x', this.window);
+    });
+
+    const endDrag = (e: PointerEvent) => {
+      if (this.drag?.pointerId !== e.pointerId) {
+        return;
+      }
+      this.drag = undefined;
+      over.style.cursor = this.canPan() ? 'grab' : '';
+    };
+    over.addEventListener('pointerup', endDrag);
+    over.addEventListener('pointercancel', endDrag);
   }
 
   private renderChart(): void {
@@ -125,14 +204,17 @@ export class WeightChartComponent implements OnInit, AfterViewInit, OnDestroy {
     }
 
     if (this.chart) {
-      this.chart.setData(this.data);
+      // Keep scales; the window is applied explicitly below.
+      this.chart.setData(this.data, false);
     } else {
       this.chart = new uPlot(
         this.buildOptions(),
         this.data,
         this.chartContainer.nativeElement,
       );
+      this.setupPanning(this.chart.over);
     }
+    this.applyWindow();
   }
 
   private buildOptions(): uPlot.Options {
@@ -141,6 +223,8 @@ export class WeightChartComponent implements OnInit, AfterViewInit, OnDestroy {
       width,
       height,
       scales: { x: { time: true } },
+      // No drag-to-zoom: dragging pans the window instead.
+      cursor: { drag: { x: false, y: false, setScale: false } },
       series: [
         {
           label: 'Date',
