@@ -9,5 +9,6 @@ CREATE TABLE IF NOT EXISTS Weights (
     Date TEXT NOT NULL,
     Weight TEXT NOT NULL,
     Deleted INTEGER NOT NULL DEFAULT 0,
-    Comment TEXT
+    Comment TEXT,
+    Important INTEGER NOT NULL DEFAULT 0
 );

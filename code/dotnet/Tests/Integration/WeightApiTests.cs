@@ -153,6 +153,27 @@ public class WeightApiTests : IDisposable
     }
 
     [Fact]
+    public async Task PostThenPut_RoundTripsTheImportantFlag()
+    {
+        var client = _factory.CreateClientWithKey(ApiTestFactory.AliceKey);
+        await client.PostAsJsonAsync("/api/weight",
+            new CreateWeightRecordRequest(new DateTime(2025, 1, 15), 82.5m, "started new meds", Important: true));
+        var record = (await client.GetFromJsonAsync<WeightsCollection>("/api/weights"))!
+            .WeightRecords!.Single();
+
+        using var _ = new AssertionScope();
+        record.Important.Should().BeTrue();
+
+        var put = await client.PutAsJsonAsync($"/api/weight/{record.WeightId}",
+            new UpdateWeightRecordRequest("started new meds", Important: false));
+        put.StatusCode.Should().Be(HttpStatusCode.NoContent);
+
+        var updated = (await client.GetFromJsonAsync<WeightsCollection>("/api/weights"))!
+            .WeightRecords!.Single();
+        updated.Important.Should().BeFalse();
+    }
+
+    [Fact]
     public async Task Put_ForAnotherUsersRecord_ReturnsNotFoundAndDoesNotChangeIt()
     {
         var alice = _factory.CreateClientWithKey(ApiTestFactory.AliceKey);

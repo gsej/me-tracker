@@ -22,9 +22,8 @@ public class ReportHandler
                 group.Average(record => record.Weight),
                 group
                     .OrderBy(record => record.Date)
-                    .Select(record => record.Comment)
-                    .Where(comment => !string.IsNullOrWhiteSpace(comment))
-                    .Select(comment => comment!)
+                    .Where(record => !string.IsNullOrWhiteSpace(record.Comment))
+                    .Select(record => new ReportComment(record.Comment!, record.Important))
                     .ToList()))
             .OrderBy(record => record.Date)
             .ToList();

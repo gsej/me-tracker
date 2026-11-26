@@ -31,6 +31,7 @@ namespace Api.DataAccess
             command.ExecuteNonQuery();
 
             AddColumnIfMissing(connection, "Comment", "TEXT");
+            AddColumnIfMissing(connection, "Important", "INTEGER NOT NULL DEFAULT 0");
         }
 
         /// <summary>
@@ -67,7 +68,7 @@ namespace Api.DataAccess
             using var connection = new SqliteConnection(_connectionString);
             await connection.OpenAsync();
             var command = connection.CreateCommand();
-            command.CommandText = "SELECT WeightId, UserId, Date, Weight, Deleted, Comment FROM Weights WHERE UserId = $userId AND Deleted = 0";
+            command.CommandText = "SELECT WeightId, UserId, Date, Weight, Deleted, Comment, Important FROM Weights WHERE UserId = $userId AND Deleted = 0";
             command.Parameters.AddWithValue("$userId", userId);
 
             var results = new List<WeightEntity>();
@@ -87,7 +88,7 @@ namespace Api.DataAccess
             using var connection = new SqliteConnection(_connectionString);
             await connection.OpenAsync();
             var command = connection.CreateCommand();
-            command.CommandText = "SELECT WeightId, UserId, Date, Weight, Deleted, Comment FROM Weights";
+            command.CommandText = "SELECT WeightId, UserId, Date, Weight, Deleted, Comment, Important FROM Weights";
 
             var results = new List<WeightEntity>();
             using var reader = await command.ExecuteReaderAsync();
@@ -103,7 +104,7 @@ namespace Api.DataAccess
             using var connection = new SqliteConnection(_connectionString);
             await connection.OpenAsync();
             var command = connection.CreateCommand();
-            command.CommandText = "SELECT WeightId, UserId, Date, Weight, Deleted, Comment FROM Weights WHERE WeightId = $weightId AND UserId = $userId AND Deleted = 0";
+            command.CommandText = "SELECT WeightId, UserId, Date, Weight, Deleted, Comment, Important FROM Weights WHERE WeightId = $weightId AND UserId = $userId AND Deleted = 0";
             command.Parameters.AddWithValue("$weightId", weightId.ToString());
             command.Parameters.AddWithValue("$userId", userId);
 
@@ -120,13 +121,14 @@ namespace Api.DataAccess
             using var connection = new SqliteConnection(_connectionString);
             await connection.OpenAsync();
             var command = connection.CreateCommand();
-            command.CommandText = "INSERT INTO Weights (WeightId, UserId, Date, Weight, Deleted, Comment) VALUES ($weightId, $userId, $date, $weight, $deleted, $comment)";
+            command.CommandText = "INSERT INTO Weights (WeightId, UserId, Date, Weight, Deleted, Comment, Important) VALUES ($weightId, $userId, $date, $weight, $deleted, $comment, $important)";
             command.Parameters.AddWithValue("$weightId", entity.WeightId.ToString());
             command.Parameters.AddWithValue("$userId", entity.UserId);
             command.Parameters.AddWithValue("$date", ToUtc(entity.Date).ToString("O"));
             command.Parameters.AddWithValue("$weight", entity.Weight.ToString(CultureInfo.InvariantCulture));
             command.Parameters.AddWithValue("$deleted", entity.Deleted ? 1 : 0);
             command.Parameters.AddWithValue("$comment", (object?)NormaliseComment(entity.Comment) ?? DBNull.Value);
+            command.Parameters.AddWithValue("$important", NormaliseImportant(entity) ? 1 : 0);
             await command.ExecuteNonQueryAsync();
         }
 
@@ -135,11 +137,12 @@ namespace Api.DataAccess
             using var connection = new SqliteConnection(_connectionString);
             await connection.OpenAsync();
             var command = connection.CreateCommand();
-            command.CommandText = "UPDATE Weights SET Date = $date, Weight = $weight, Deleted = $deleted, Comment = $comment WHERE WeightId = $weightId";
+            command.CommandText = "UPDATE Weights SET Date = $date, Weight = $weight, Deleted = $deleted, Comment = $comment, Important = $important WHERE WeightId = $weightId";
             command.Parameters.AddWithValue("$date", ToUtc(entity.Date).ToString("O"));
             command.Parameters.AddWithValue("$weight", entity.Weight.ToString(CultureInfo.InvariantCulture));
             command.Parameters.AddWithValue("$deleted", entity.Deleted ? 1 : 0);
             command.Parameters.AddWithValue("$comment", (object?)NormaliseComment(entity.Comment) ?? DBNull.Value);
+            command.Parameters.AddWithValue("$important", NormaliseImportant(entity) ? 1 : 0);
             command.Parameters.AddWithValue("$weightId", entity.WeightId.ToString());
             await command.ExecuteNonQueryAsync();
         }
@@ -168,7 +171,8 @@ namespace Api.DataAccess
                 ToUtc(DateTime.Parse(reader.GetString(2), CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind)),
                 decimal.Parse(reader.GetString(3), CultureInfo.InvariantCulture),
                 reader.GetInt32(4) != 0,
-                reader.IsDBNull(5) ? null : reader.GetString(5)
+                reader.IsDBNull(5) ? null : reader.GetString(5),
+                reader.GetInt32(6) != 0
             );
         }
 
@@ -179,6 +183,13 @@ namespace Api.DataAccess
         /// </summary>
         private static string? NormaliseComment(string? comment) =>
             string.IsNullOrWhiteSpace(comment) ? null : comment.Trim();
+
+        /// <summary>
+        /// Only a comment can be important, so a weight without one is never stored as
+        /// important (clearing a comment clears the flag too).
+        /// </summary>
+        private static bool NormaliseImportant(WeightEntity entity) =>
+            entity.Important && NormaliseComment(entity.Comment) != null;
 
         /// <summary>
         /// Normalises a date to UTC so weights are stored and returned as UTC regardless of the

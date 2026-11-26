@@ -19,7 +19,7 @@ template-ness.
 - `code/angular/` — Angular PWA frontend.
 - `code/tests/rest/` — `.http` files for hitting the API by hand.
 - `code/tests/jest/` — Jest setup (frontend).
-- `data/create_tables.sql` — reference schema (tables are also auto-created by the repositories).
+- `code/data/create_tables.sql` — reference schema (tables are also auto-created by the repositories).
 
 ## Toolchain (current)
 
@@ -34,7 +34,7 @@ template-ness.
 Backend (from `code/dotnet/`):
 ```bash
 dotnet build
-dotnet test                     # xUnit; 52 tests
+dotnet test                     # xUnit
 dotnet run --project Api        # local API on http://localhost:5200
 ```
 
@@ -81,10 +81,16 @@ The service worker is off in `ng serve`, so the banner never shows in local dev.
   200 chars (via `[MaxLength]` on the request records; `[ApiController]` turns that
   into an automatic `400`), with empty/whitespace normalised to `NULL` in the
   repository. Set it on create, or edit it later via `PUT /api/weight/{id}`.
+- **A weight entry also carries an `Important` flag** (bool, default `false`) that
+  marks its comment as important (red on the chart). It's only meaningful with a
+  comment: the repository stores `false` whenever there's no comment. Set it on
+  create or via `PUT /api/weight/{id}` — a PUT that omits it resets it to `false`.
+  It's included in backup/restore; older backups without it restore as `false`.
+  `/api/report` gives each day a `comments` list of `{ text, important }`.
 - **Schema changes use a guarded `ALTER TABLE`, not a migration framework** —
   `WeightRepository.EnsureTablesExist` adds any missing column idempotently
   (checking `PRAGMA table_info` first), so a deployed database picks up new columns
-  on next start. This is how `Comment` was added; follow the same pattern.
+  on next start. This is how `Comment` and `Important` were added; follow the same pattern.
 - **Dates are stored/returned as UTC** regardless of server timezone (there's a
   regression test guarding this) — preserve that when touching the data layer.
 - SQLite persistence stores dates as ISO `"O"` and decimals with `InvariantCulture`.

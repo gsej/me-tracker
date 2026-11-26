@@ -20,4 +20,7 @@ export class Page4Component {
 
   /** 3M is the default selection. */
   selected = this.rangeOptions[2];
+
+  /** Show only important comment markers; untick for all of them. On each time the app opens. */
+  importantOnly = true;
 }

@@ -78,7 +78,7 @@ public class BackupApiTests : IDisposable
             new[] { new User(ApiTestFactory.AliceUserId, 180) },
             new[]
             {
-                new WeightRecord(Guid.NewGuid(), ApiTestFactory.AliceUserId, new DateTime(2025, 1, 1), 80m, false, "new year"),
+                new WeightRecord(Guid.NewGuid(), ApiTestFactory.AliceUserId, new DateTime(2025, 1, 1), 80m, false, "new year", Important: true),
                 new WeightRecord(Guid.NewGuid(), ApiTestFactory.AliceUserId, new DateTime(2025, 1, 2), 81m, false),
             }));
 
@@ -87,7 +87,9 @@ public class BackupApiTests : IDisposable
         var records = backup!.WeightRecords!.OrderBy(r => r.Date).ToList();
         records.Should().HaveCount(2);
         records[0].Comment.Should().Be("new year");
+        records[0].Important.Should().BeTrue();
         records[1].Comment.Should().BeNull();
+        records[1].Important.Should().BeFalse();
     }
 
     [Fact]

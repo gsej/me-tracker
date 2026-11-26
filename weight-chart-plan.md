@@ -19,6 +19,11 @@ deferred to a later iteration.
 
 - [x] Date-formatting refactor (prerequisite — see Step 0 below).
 - [x] Steps 1-6 implemented; `npm run build` passes.
+- [x] Later work (2026-11-26), beyond this plan: 1W/1M ranges; drag/swipe to pan
+  within the selected range (only the plot area blocks page swipes); comment
+  markers with a tap/hover popup; an `Important` flag on comments (red, heavier
+  markers) with a "Show only important comments" checkbox under the legend;
+  CSS-driven chart sizing with uPlot's legend mounted below the chart box.
 
 ### Known follow-up
 - `weight-report` and `weight-chart` both call `loadWeightReport()` on init, and

@@ -6,4 +6,5 @@ public record WeightRecord(
     DateTime Date,
     decimal Weight,
     bool Deleted,
-    string? Comment = null);
+    string? Comment = null,
+    bool Important = false);

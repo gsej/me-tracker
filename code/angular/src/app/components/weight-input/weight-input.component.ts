@@ -29,6 +29,7 @@ export class WeightInputComponent {
     this.weightForm = this.fb.group({
       weight: ['', [Validators.required, Validators.min(0)]],
       comment: ['', [Validators.maxLength(200)]],
+      important: [false],
     });
   }
 
@@ -49,8 +50,9 @@ export class WeightInputComponent {
     if (this.weightForm.valid) {
       const weight = this.weightForm.value.weight;
       const comment = this.weightForm.value.comment?.trim() || undefined;
+      const important = !!this.weightForm.value.important;
 
-      this.weightService.addWeightRecord(weight, comment).subscribe({
+      this.weightService.addWeightRecord(weight, comment, important).subscribe({
         next: () => {
           this.status = 'Success';
           this.errorStatusCode = null;

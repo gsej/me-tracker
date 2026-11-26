@@ -9,6 +9,8 @@ export interface WeightRecord {
   date: string;
   weight: number;
   comment?: string;
+  /** The comment is important (red on the chart). Only meaningful with a comment. */
+  important: boolean;
 }
 
 export interface WeightsCollection {
@@ -54,7 +56,8 @@ export class WeightService {
             weightId: record.weightId,
             date: new Date(record.date).toLocaleDateString(),
             weight: record.weight,
-            comment: record.comment
+            comment: record.comment,
+            important: record.important ?? false
           }));
           this.weightRecordsSubject.next(formattedRecords);
           this.isLoadingSubject.next(false);
@@ -67,11 +70,12 @@ export class WeightService {
       });
   }
 
-  addWeightRecord(weight: number, comment?: string): Observable<void> {
+  addWeightRecord(weight: number, comment?: string, important = false): Observable<void> {
     const payload = {
       weight: weight,
       date: new Date(),
-      comment: comment
+      comment: comment,
+      important: !!comment && important
     };
 
     return this.http.post<void>(`${this.apiUrl}/api/weight`, payload)
@@ -83,8 +87,11 @@ export class WeightService {
       );
   }
 
-  updateComment(weightId: string, comment: string | null): Observable<void> {
-    return this.http.put<void>(`${this.apiUrl}/api/weight/${weightId}`, { comment })
+  updateComment(weightId: string, comment: string | null, important: boolean): Observable<void> {
+    return this.http.put<void>(`${this.apiUrl}/api/weight/${weightId}`, {
+      comment,
+      important: comment != null && important,
+    })
       .pipe(
         tap(() => {
           // After successfully updating, refresh the list

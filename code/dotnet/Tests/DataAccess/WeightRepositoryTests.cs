@@ -195,6 +195,38 @@ public class WeightRepositoryTests : IDisposable
     }
 
     [Fact]
+    public async Task AddThenGetById_RoundTripsTheImportantFlag()
+    {
+        var id = Guid.NewGuid();
+        await _repository.AddAsync(
+            new WeightEntity(id, "alice", new DateTime(2025, 1, 15), 82.5m, false, "started new meds", important: true));
+
+        var loaded = await _repository.GetByIdAsync(id, "alice");
+
+        loaded!.Important.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task ImportantIsNeverStoredWithoutAComment()
+    {
+        var id = Guid.NewGuid();
+        await _repository.AddAsync(
+            new WeightEntity(id, "alice", new DateTime(2025, 1, 15), 82.5m, false, "  ", important: true));
+        (await _repository.GetByIdAsync(id, "alice"))!.Important.Should().BeFalse();
+
+        var entity = (await _repository.GetByIdAsync(id, "alice"))!;
+        entity.Comment = "important now";
+        entity.Important = true;
+        await _repository.UpdateAsync(entity);
+        (await _repository.GetByIdAsync(id, "alice"))!.Important.Should().BeTrue();
+
+        // Clearing the comment clears the flag.
+        entity.Comment = null;
+        await _repository.UpdateAsync(entity);
+        (await _repository.GetByIdAsync(id, "alice"))!.Important.Should().BeFalse();
+    }
+
+    [Fact]
     public async Task Constructor_AddsCommentColumnToAPreExistingTableWithoutIt()
     {
         // Simulate a database deployed before the Comment column existed: create the
@@ -228,6 +260,12 @@ public class WeightRepositoryTests : IDisposable
                 new WeightEntity(id, "alice", new DateTime(2025, 1, 15), 82.5m, false, "migrated fine"));
 
             (await repository.GetByIdAsync(id, "alice"))!.Comment.Should().Be("migrated fine");
+
+            // The Important column is added too, and works.
+            var importantId = Guid.NewGuid();
+            await repository.AddAsync(
+                new WeightEntity(importantId, "alice", new DateTime(2025, 1, 16), 82m, false, "key day", important: true));
+            (await repository.GetByIdAsync(importantId, "alice"))!.Important.Should().BeTrue();
         }
         finally
         {

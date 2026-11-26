@@ -19,24 +19,27 @@ export class WeightRecordsComponent implements OnInit {
 
   editingId: string | null = null;
   editValue = '';
+  editImportant = false;
 
   ngOnInit(): void {
     this.loadWeightRecords();
   }
 
-  startEdit(weightId: string, currentComment?: string): void {
+  startEdit(weightId: string, currentComment?: string, important = false): void {
     this.editingId = weightId;
     this.editValue = currentComment ?? '';
+    this.editImportant = important;
   }
 
   cancelEdit(): void {
     this.editingId = null;
     this.editValue = '';
+    this.editImportant = false;
   }
 
   saveEdit(weightId: string): void {
     const trimmed = this.editValue.trim();
-    this.weightService.updateComment(weightId, trimmed === '' ? null : trimmed).subscribe({
+    this.weightService.updateComment(weightId, trimmed === '' ? null : trimmed, this.editImportant).subscribe({
       next: () => this.cancelEdit(),
       error: (error) => {
         console.error('Error updating comment:', error);

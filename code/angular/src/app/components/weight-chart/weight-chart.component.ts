@@ -13,14 +13,20 @@ import {
 import { CommonModule } from '@angular/common';
 import { Subscription } from 'rxjs';
 import uPlot from 'uplot';
-import { WeightReportService, WeightReport } from '../../services/weight-report.service';
+import {
+  WeightReportService,
+  WeightReport,
+  ReportComment,
+} from '../../services/weight-report.service';
 
 /** A day with comments, drawn as a marker line on the chart. */
 interface CommentMarker {
   /** Unix seconds, matching the chart's x values. */
   x: number;
   date: string;
-  comments: string[];
+  comments: ReportComment[];
+  /** True when any of the day's comments is important (drawn in red). */
+  important: boolean;
 }
 
 /** The comment popup, positioned within the chart wrapper (CSS px). */
@@ -31,10 +37,11 @@ export interface CommentPopup {
   /** ...or this when it sits to the left (markers in the right half). */
   right: number | null;
   date: string;
-  comments: string[];
+  comments: ReportComment[];
 }
 
 const MARKER_COLOUR = '#f59e0b';
+const IMPORTANT_MARKER_COLOUR = '#dc2626';
 /** How close (CSS px) a tap or hover must be to a marker line to pick it. */
 const MARKER_HIT_PX = 16;
 /** Pointer movement (CSS px) beyond which a press is a drag, not a tap. */
@@ -59,10 +66,15 @@ export class WeightChartComponent implements OnInit, AfterViewInit, OnDestroy {
 
   @ViewChild('chartContainer') private chartContainer?: ElementRef<HTMLDivElement>;
   @ViewChild('chartWrapper') private chartWrapper?: ElementRef<HTMLDivElement>;
+  @ViewChild('legendHost') private legendHost?: ElementRef<HTMLDivElement>;
 
   /** The comment popup currently shown, if any. */
   readonly popup = signal<CommentPopup | null>(null);
+  /** Every day with comments. */
+  private allMarkers: CommentMarker[] = [];
+  /** The markers shown: all of them, or only important ones (with only their important comments). */
   private markers: CommentMarker[] = [];
+  private _importantOnly = false;
   /** Set from pointerdown until the pointer moves too far to count as a tap. */
   private tap?: { pointerId: number; x: number; y: number };
 
@@ -82,6 +94,14 @@ export class WeightChartComponent implements OnInit, AfterViewInit, OnDestroy {
   @Input() set range(value: ChartRange) {
     this._range = value;
     this.rebuild();
+  }
+
+  /** Show only important comment markers. */
+  @Input() set importantOnly(value: boolean) {
+    this._importantOnly = value;
+    this.markers = this.visibleMarkers();
+    this.popup.set(null);
+    this.chart?.redraw(false, false);
   }
 
   ngOnInit(): void {
@@ -111,7 +131,8 @@ export class WeightChartComponent implements OnInit, AfterViewInit, OnDestroy {
   /** Rebuild the data, reset the window to end at the latest entry, and repaint. */
   private rebuild(): void {
     this.data = this.toChartData(this.report);
-    this.markers = this.toMarkers(this.report);
+    this.allMarkers = this.toMarkers(this.report);
+    this.markers = this.visibleMarkers();
     this.window = this.initialWindow();
     this.drag = undefined;
     this.tap = undefined;
@@ -143,11 +164,24 @@ export class WeightChartComponent implements OnInit, AfterViewInit, OnDestroy {
         x: Math.floor(new Date(e.date).getTime() / 1000),
         date: e.date,
         comments: e.comments,
+        important: e.comments.some((c) => c.important),
       }))
       .sort((a, b) => a.x - b.x);
   }
 
-  /** Draw a dashed line, with a dot at the top, for each day with comments. */
+  private visibleMarkers(): CommentMarker[] {
+    if (!this._importantOnly) {
+      return this.allMarkers;
+    }
+    return this.allMarkers
+      .filter((m) => m.important)
+      .map((m) => ({ ...m, comments: m.comments.filter((c) => c.important) }));
+  }
+
+  /**
+   * Draw a line, with a dot at the top, for each day with comments: thin dashed
+   * amber, or heavier solid red for important ones (drawn last so they stay on top).
+   */
   private drawMarkers(u: uPlot): void {
     if (this.markers.length === 0) {
       return;
@@ -159,12 +193,17 @@ export class WeightChartComponent implements OnInit, AfterViewInit, OnDestroy {
     ctx.beginPath();
     ctx.rect(left, top, width, height);
     ctx.clip();
-    ctx.strokeStyle = MARKER_COLOUR;
-    ctx.fillStyle = MARKER_COLOUR;
-    ctx.lineWidth = pxr;
-    ctx.setLineDash([4 * pxr, 3 * pxr]);
-    const dotRadius = 4 * pxr;
-    for (const m of this.markers) {
+    const ordered = [
+      ...this.markers.filter((m) => !m.important),
+      ...this.markers.filter((m) => m.important),
+    ];
+    for (const m of ordered) {
+      const colour = m.important ? IMPORTANT_MARKER_COLOUR : MARKER_COLOUR;
+      ctx.strokeStyle = colour;
+      ctx.fillStyle = colour;
+      ctx.lineWidth = (m.important ? 2 : 1) * pxr;
+      ctx.setLineDash(m.important ? [] : [4 * pxr, 3 * pxr]);
+      const dotRadius = (m.important ? 5 : 4) * pxr;
       const x = Math.round(u.valToPos(m.x, 'x', true));
       if (x < left || x > left + width) {
         continue;
@@ -405,6 +444,9 @@ export class WeightChartComponent implements OnInit, AfterViewInit, OnDestroy {
       scales: { x: { time: true } },
       // No drag-to-zoom: dragging pans the window instead.
       cursor: { drag: { x: false, y: false, setScale: false } },
+      // Keep the legend out of the chart box, so the box holds only the plot and
+      // CSS can size it; the legend (and anything under it) follows in normal flow.
+      legend: { mount: (_u, el) => this.legendHost?.nativeElement.appendChild(el) },
       hooks: { draw: [(u) => this.drawMarkers(u)] },
       series: [
         {
@@ -461,12 +503,8 @@ export class WeightChartComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private currentSize(): { width: number; height: number } {
+    // The chart box's own size; its CSS (16:9, shrinking to fit, min 150px) does the layout.
     const el = this.chartContainer!.nativeElement;
-    const width = el.clientWidth || 300;
-    const available = el.clientHeight || 200;
-    // Prefer a 16:9 height, but never exceed the space available (keeps
-    // landscape fitting on screen, while portrait gets the nicer ratio).
-    const height = Math.min(available, Math.max(150, Math.round(width * 9 / 16)));
-    return { width, height };
+    return { width: el.clientWidth || 300, height: el.clientHeight || 150 };
   }
 }

@@ -1,6 +1,9 @@
 namespace Api.Controllers.Report;
 
-public record Stage1ReportEntry(DateOnly Date, decimal Weight, IReadOnlyList<string> Comments);
+/// <summary>A comment on one of the day's weighings.</summary>
+public record ReportComment(string Text, bool Important);
+
+public record Stage1ReportEntry(DateOnly Date, decimal Weight, IReadOnlyList<ReportComment> Comments);
 
 public record Stage2ReportEntry(DateOnly Date, 
     decimal? RecordedWeight, 
@@ -10,5 +13,5 @@ public record Stage2ReportEntry(DateOnly Date,
     decimal TwoWeekChange,
     decimal FourWeekChange,
     decimal TwelveWeekChange,
-    IReadOnlyList<string> Comments
+    IReadOnlyList<ReportComment> Comments
     );

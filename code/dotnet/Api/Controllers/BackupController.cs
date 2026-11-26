@@ -32,7 +32,8 @@ public class BackupController : ControllerBase
                 entity.Date,
                 entity.Weight,
                 entity.Deleted,
-                entity.Comment))
+                entity.Comment,
+                entity.Important))
             .OrderBy(record => record.Date);
 
         return new Backup(users, weightRecords);
@@ -67,7 +68,8 @@ public class BackupController : ControllerBase
                 weightRecord.Date,
                 weightRecord.Weight,
                 weightRecord.Deleted,
-                weightRecord.Comment));
+                weightRecord.Comment,
+                weightRecord.Important));
         }
 
         return Ok();

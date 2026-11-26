@@ -3,6 +3,12 @@ import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject } from 'rxjs';
 import { SettingsService } from '../settings/settings.service';
 
+/** A comment on one of the day's weighings. */
+export interface ReportComment {
+  text: string;
+  important: boolean;
+}
+
 export interface WeightReportEntry {
   date: string;
   recordedWeight: number;
@@ -13,7 +19,7 @@ export interface WeightReportEntry {
   fourWeekChange: number;
   twelveWeekChange: number;
   /** Comments from that day's weighings (empty if none). */
-  comments: string[];
+  comments: ReportComment[];
 }
 
 export interface WeightReport {

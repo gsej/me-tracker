@@ -31,7 +31,17 @@
 @let commentPopup = popup();
 
 <div #chartWrapper class="relative w-full flex-1 min-h-0 flex flex-col">
-  <div #chartContainer class="w-full flex-1 min-h-0"></div>
+  <!--
+    The chart box: 16:9, shrinking (to no less than 150px) when space is short,
+    e.g. landscape. CSS decides its size; uPlot is sized to match it.
+  -->
+  <div #chartContainer class="w-full aspect-video shrink min-h-[150px] overflow-hidden"></div>
+  <!-- uPlot mounts its legend here, directly under the chart box. -->
+  <div #legendHost class="shrink-0"></div>
+  <!-- Whatever the page puts inside <app-weight-chart>, under the legend. -->
+  <div class="shrink-0">
+    <ng-content></ng-content>
+  </div>
 
   @if (commentPopup) {
     <div
@@ -42,7 +52,16 @@
     >
       <p class="font-semibold text-amber-600">{{ commentPopup.date }}</p>
       @for (comment of commentPopup.comments; track $index) {
-        <p class="text-gray-700 whitespace-pre-wrap break-words">{{ comment }}</p>
+        <p
+          class="whitespace-pre-wrap break-words"
+          [class.text-gray-700]="!comment.important"
+          [class.text-red-600]="comment.important"
+        >
+          @if (comment.important) {
+            <span class="font-bold">!</span>
+          }
+          {{ comment.text }}
+        </p>
       }
     </div>
   }

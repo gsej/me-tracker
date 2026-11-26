@@ -8,7 +8,7 @@ public class WeightEntity
     {
     }
 
-    public WeightEntity(Guid weightId, string userId, DateTime date, decimal weight, bool deleted, string? comment = null)
+    public WeightEntity(Guid weightId, string userId, DateTime date, decimal weight, bool deleted, string? comment = null, bool important = false)
     {
         WeightId = weightId;
         UserId = userId;
@@ -16,6 +16,7 @@ public class WeightEntity
         Weight = weight;
         Deleted = deleted;
         Comment = comment;
+        Important = important;
     }
 
     public Guid WeightId { get; init; }
@@ -29,4 +30,7 @@ public class WeightEntity
     public decimal Weight { get; set; }
 
     public string? Comment { get; set; }
+
+    /// <summary>Marks the comment as important (shown in red on the chart). Always false without a comment.</summary>
+    public bool Important { get; set; }
 }

@@ -72,12 +72,23 @@
                     Cancel
                   </button>
                 </div>
+                <label class="mt-1 flex items-center gap-2 text-sm text-gray-700">
+                  <input type="checkbox" [(ngModel)]="editImportant" class="accent-red-600" />
+                  Important
+                </label>
               } @else if (record.comment) {
                 <button
-                  class="mt-1 block text-left text-gray-500 hover:text-gray-700 focus:outline-none"
-                  (click)="startEdit(record.weightId, record.comment)"
-                  title="Edit note"
+                  class="mt-1 block text-left focus:outline-none"
+                  [class.text-gray-500]="!record.important"
+                  [class.hover:text-gray-700]="!record.important"
+                  [class.text-red-600]="record.important"
+                  [class.hover:text-red-700]="record.important"
+                  (click)="startEdit(record.weightId, record.comment, record.important)"
+                  [title]="record.important ? 'Edit note (important)' : 'Edit note'"
                 >
+                  @if (record.important) {
+                    <span class="font-bold" aria-label="Important">!</span>
+                  }
                   {{ record.comment }}
                 </button>
               } @else {

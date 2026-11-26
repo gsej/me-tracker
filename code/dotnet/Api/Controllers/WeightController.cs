@@ -32,7 +32,8 @@ public class WeightController : ControllerBase
             entity.Date,
             entity.Weight,
             entity.Deleted,
-            entity.Comment));
+            entity.Comment,
+            entity.Important));
         var orderedWeightRecords = weightRecords.OrderBy(record => record.Date);
         return new WeightsCollection(orderedWeightRecords);
     }
@@ -52,7 +53,8 @@ public class WeightController : ControllerBase
             entity.Date,
             entity.Weight,
             entity.Deleted,
-            entity.Comment));
+            entity.Comment,
+            entity.Important));
     }
 
     [HttpPost]
@@ -60,7 +62,7 @@ public class WeightController : ControllerBase
     {
         var weightId = Guid.NewGuid();
         var userId = (string)_httpContextAccessor.HttpContext!.Items[ApiKeyAuthFilter.UserIdKeyname]!;
-        var entity = new WeightEntity(weightId, userId, request.Date, request.Weight, false, request.Comment);
+        var entity = new WeightEntity(weightId, userId, request.Date, request.Weight, false, request.Comment, request.Important);
         await _weightRepository.AddAsync(entity);
         Response.Headers.Append("Location", $"/api/weight/{weightId}");
         return CreatedAtAction(nameof(GetWeightRecord), new { weightId }, null);
@@ -77,6 +79,7 @@ public class WeightController : ControllerBase
         }
 
         entity.Comment = request.Comment;
+        entity.Important = request.Important;
         await _weightRepository.UpdateAsync(entity);
         return NoContent();
     }
