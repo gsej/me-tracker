@@ -27,3 +27,6 @@ infra/terraform.tfstate.d/
 crash.log
 crash.*.log
 
+
+# check-ssh.sh diagnostics log
+check-ssh.log
