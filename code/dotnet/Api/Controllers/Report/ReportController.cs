@@ -36,7 +36,8 @@ public class ReportController : ControllerBase
         // guaranteed non-null; fail loudly rather than NRE if that invariant is ever broken.
         var user = await _userRepository.GetByIdAsync(userId)
                    ?? throw new InvalidOperationException($"No profile row for authenticated user '{userId}'.");
-        var report = _reportHandler.GetReport(weights, user.HeightInCm);
+        var adjustedWeights = ScaleChangeAdjustment.Apply(userId, weights); // TEMPORARY: see CLAUDE.md
+        var report = _reportHandler.GetReport(adjustedWeights, user.HeightInCm);
         return report;
     }
 }

@@ -95,6 +95,17 @@ The service worker is off in `ng serve`, so the banner never shows in local dev.
   regression test guarding this) — preserve that when touching the data layer.
 - SQLite persistence stores dates as ISO `"O"` and decimals with `InvariantCulture`.
 
+## Temporary: scale-change fudge — remove after 26 Feb 2027
+
+New Withings scales were first used on 27/11/2026 and read lighter than the old ones
+(`gsej` ~0.6 kg, `shej` ~0.4 kg). Treating the new scales as accurate,
+`ScaleChangeAdjustment` (`Api/Controllers/Report/`) subtracts those offsets from
+readings dated before 2026-11-27 UTC — **for `/api/report` only**; stored data, the
+records list and backups are untouched. Once 26 Feb 2027 has passed, the old readings
+no longer affect the 12-week change, so remove it: delete
+`ScaleChangeAdjustment.cs`, its call in `ReportController`, and
+`Tests/ScaleChangeAdjustmentTests.cs`, then delete this section.
+
 ## Conventions
 
 - The API is polished as a skeleton; the `TODO` file at the repo root tracks
